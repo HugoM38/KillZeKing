@@ -37,5 +37,25 @@ public class BoardGenerator : MonoBehaviour
                 tiles[x, y] = tile;
             }
         }
+        AdjustCamera();
+    }
+
+    void AdjustCamera()
+    {
+        Camera mainCamera = Camera.main;
+
+        if (mainCamera != null)
+        {
+            float boardWidth = width * tileSpacing;
+            float boardHeight = height * tileSpacing;
+
+            float aspectRatio = (float)Screen.width / Screen.height;
+
+            float sizeBasedOnWidth = boardWidth / (2f * aspectRatio);
+            float sizeBasedOnHeight = boardHeight / 2f;
+
+            mainCamera.orthographicSize = Mathf.Max(sizeBasedOnWidth, sizeBasedOnHeight) + 1f;
+            mainCamera.transform.position = new Vector3(0f, 0f, -10f);
+        }
     }
 }
