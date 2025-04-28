@@ -5,6 +5,7 @@ public class Tile : MonoBehaviour
     public Vector2Int gridPosition;
     public bool isOccupied;
     public Color baseColor;
+    public ChessPiece currentPiece;
 
     public void Init(Vector2Int position, Color color)
     {
@@ -14,4 +15,10 @@ public class Tile : MonoBehaviour
 
         GetComponent<SpriteRenderer>().color = baseColor;
     }
+
+    public bool IsOccupied()
+    {
+        return currentPiece != null;
+    }
+
 }

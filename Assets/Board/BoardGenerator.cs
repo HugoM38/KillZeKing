@@ -9,9 +9,24 @@ public class BoardGenerator : MonoBehaviour
 
     private Tile[,] tiles;
 
+    public ChessPiece PawnWhitePrefab;
+    public ChessPiece PawnBlackPrefab;
+    public ChessPiece RookWhitePrefab;
+    public ChessPiece RookBlackPrefab;
+    public ChessPiece KnightWhitePrefab;
+    public ChessPiece KnightBlackPrefab;
+    public ChessPiece BishopWhitePrefab;
+    public ChessPiece BishopBlackPrefab;
+    public ChessPiece QueenWhitePrefab;
+    public ChessPiece QueenBlackPrefab;
+    public ChessPiece KingWhitePrefab;
+    public ChessPiece KingBlackPrefab;
+
+
     void Start()
     {
         GenerateBoard();
+        SetupPieces(); // ➡️ On installe les pièces après avoir généré le plateau
     }
 
     void GenerateBoard()
@@ -58,4 +73,70 @@ public class BoardGenerator : MonoBehaviour
             mainCamera.transform.position = new Vector3(0f, 0f, -10f);
         }
     }
+
+    void SetupPieces()
+    {
+        if (tiles == null)
+        {
+            Debug.LogError("Board not generated yet!");
+            return;
+        }
+
+        // ➡️ 1. Placer les pions
+        for (int x = 0; x < width; x++)
+        {
+            Tile whitePawnTile = tiles[x, 1];
+            ChessPiece whitePawn = Instantiate(PawnWhitePrefab, whitePawnTile.transform.position, Quaternion.identity, whitePawnTile.transform);
+            whitePawnTile.currentPiece = whitePawn;
+
+            Tile blackPawnTile = tiles[x, height - 2];
+            ChessPiece blackPawn = Instantiate(PawnBlackPrefab, blackPawnTile.transform.position, Quaternion.identity, blackPawnTile.transform);
+            blackPawnTile.currentPiece = blackPawn;
+        }
+
+        // ➡️ 2. Placer les autres pièces sur la première ligne (y=0) pour Blancs
+        PlaceMajorPieces(0, true);
+
+        // ➡️ 3. Placer les autres pièces sur la dernière ligne (y=height-1) pour Noirs
+        PlaceMajorPieces(height - 1, false);
+    }
+
+    void PlaceMajorPieces(int y, bool isWhite)
+    {
+        ChessPiece rookPrefab = isWhite ? RookWhitePrefab : RookBlackPrefab;
+        ChessPiece knightPrefab = isWhite ? KnightWhitePrefab : KnightBlackPrefab;
+        ChessPiece bishopPrefab = isWhite ? BishopWhitePrefab : BishopBlackPrefab;
+        ChessPiece queenPrefab = isWhite ? QueenWhitePrefab : QueenBlackPrefab;
+        ChessPiece kingPrefab = isWhite ? KingWhitePrefab : KingBlackPrefab;
+
+        // Placement classique :
+        int widthCenter = width / 2;
+
+        // Tours
+        SpawnPiece(rookPrefab, 0, y);
+        SpawnPiece(rookPrefab, width - 1, y);
+
+        // Cavaliers
+        SpawnPiece(knightPrefab, 1, y);
+        SpawnPiece(knightPrefab, width - 2, y);
+
+        // Fous
+        SpawnPiece(bishopPrefab, 2, y);
+        SpawnPiece(bishopPrefab, width - 3, y);
+
+        // Reine
+        SpawnPiece(queenPrefab, 3, y);
+
+        // Roi
+        SpawnPiece(kingPrefab, 4, y);
+    }
+
+    void SpawnPiece(ChessPiece prefab, int x, int y)
+    {
+        Tile tile = tiles[x, y];
+        ChessPiece piece = Instantiate(prefab, tile.transform.position, Quaternion.identity, tile.transform);
+        tile.currentPiece = piece;
+    }
+
+
 }
