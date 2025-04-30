@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 public class BoardGenerator : MonoBehaviour
 {
@@ -26,7 +27,13 @@ public class BoardGenerator : MonoBehaviour
     void Start()
     {
         GenerateBoard();
-        SetupPieces(); // ➡️ On installe les pièces après avoir généré le plateau
+        StartCoroutine(SetupAfterBoard());
+    }
+
+    IEnumerator SetupAfterBoard()
+    {
+        yield return new WaitForEndOfFrame();
+        SetupPieces();
     }
 
     void GenerateBoard()
@@ -82,7 +89,6 @@ public class BoardGenerator : MonoBehaviour
             return;
         }
 
-        // ➡️ 1. Placer les pions
         for (int x = 0; x < width; x++)
         {
             Tile whitePawnTile = tiles[x, 1];
@@ -94,10 +100,7 @@ public class BoardGenerator : MonoBehaviour
             blackPawnTile.currentPiece = blackPawn;
         }
 
-        // ➡️ 2. Placer les autres pièces sur la première ligne (y=0) pour Blancs
         PlaceMajorPieces(0, true);
-
-        // ➡️ 3. Placer les autres pièces sur la dernière ligne (y=height-1) pour Noirs
         PlaceMajorPieces(height - 1, false);
     }
 
@@ -129,14 +132,31 @@ public class BoardGenerator : MonoBehaviour
 
         // Roi
         SpawnPiece(kingPrefab, 4, y);
+        print("spawned pieces");
     }
 
     void SpawnPiece(ChessPiece prefab, int x, int y)
     {
+        if (prefab == null)
+        {
+            Debug.LogError($"[BUG] Prefab manquant à la position {x},{y}");
+            return;
+        }
+
+        if (tiles[x, y] == null)
+        {
+            Debug.LogError($"[BUG] Tile non générée à la position {x},{y} — SetupPieces() appelé trop tôt ?");
+            return;
+        }
+
         Tile tile = tiles[x, y];
+
         ChessPiece piece = Instantiate(prefab, tile.transform.position, Quaternion.identity, tile.transform);
         tile.currentPiece = piece;
+
+        Debug.Log($"[OK] {piece.name} placé en ({x},{y})");
     }
+
 
 
 }
