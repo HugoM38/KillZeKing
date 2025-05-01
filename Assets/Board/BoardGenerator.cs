@@ -36,6 +36,12 @@ public class BoardGenerator : MonoBehaviour
         SetupPieces();
     }
 
+    public Tile[,] GetBoard()
+    {
+        return tiles;
+    }
+
+
     void GenerateBoard()
     {
         tiles = new Tile[width, height];
