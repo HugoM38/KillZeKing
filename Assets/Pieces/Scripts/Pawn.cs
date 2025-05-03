@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(SpriteRenderer))]
-[RequireComponent(typeof(BoxCollider2D))]
 
 public class Pawn : ChessPiece
 {

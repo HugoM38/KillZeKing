@@ -40,14 +40,33 @@ public class Tile : MonoBehaviour
     private void OnMouseDown()
     {
         var sm = SelectionManager.Instance;
-        if (sm == null || sm.selectedPiece == null)
-            return;
+        if (sm == null) return;
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
+        // ✅ Cas 1 : clic sur une case contenant une pièce
+        if (IsOccupied())
+        {
+            // ➤ Si aucune action en cours → (re)sélectionner cette pièce
+            if (sm.currentState == PlayerActionState.None)
+            {
+                sm.SelectPiece(currentPiece, board);
+                return;
+            }
+
+            // ➤ Si une action est en cours (déplacement ou attaque) → ignorer
+            return;
+        }
+
+        // ❌ Cas 2 : aucune pièce sélectionnée → rien à faire
+        if (sm.selectedPiece == null)
+            return;
+
+        // ❌ Cas 3 : la case n’est pas dans les coups valides → ignorer
         if (!sm.validMoves.Contains(this))
             return;
 
+        // ✅ Cas 4 : action valide (déplacement ou attaque)
         ChessPiece attacker = sm.selectedPiece;
         Vector2Int oldPos = attacker.GetCurrentTilePosition(board);
         Tile oldTile = board[oldPos.x, oldPos.y];
@@ -61,49 +80,25 @@ public class Tile : MonoBehaviour
                     currentPiece = attacker;
                     oldTile.currentPiece = null;
 
-                    sm.ClearSelection(board); // ✅ Réinitialise après déplacement
+                    sm.ClearSelection(board);
                 }
                 break;
 
             case PlayerActionState.Attacking:
                 if (IsOccupied() && currentPiece.color != attacker.color)
                 {
-                    currentPiece.TakeDamage(attacker.attackDamage);
+                    bool killed = currentPiece.TakeDamage(attacker.attackDamage);
 
-                    if (currentPiece == null) // la pièce ennemie a été détruite
+                    if (killed)
                     {
                         attacker.transform.position = transform.position;
                         currentPiece = attacker;
                         oldTile.currentPiece = null;
                     }
 
-                    sm.ClearSelection(board); // ✅ Réinitialise après attaque
+                    sm.ClearSelection(board);
                 }
                 break;
         }
     }
-
-    public void ExecuteAttack()
-    {
-        var sm = SelectionManager.Instance;
-        if (sm == null || sm.selectedPiece == null || sm.currentState != PlayerActionState.Attacking)
-            return;
-
-        ChessPiece attacker = sm.selectedPiece;
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-        Vector2Int attackerPos = attacker.GetCurrentTilePosition(board);
-        Tile oldTile = board[attackerPos.x, attackerPos.y];
-
-        bool killed = currentPiece.TakeDamage(attacker.attackDamage);
-
-        if (killed)
-        {
-            attacker.transform.position = transform.position;
-            currentPiece = attacker;
-            oldTile.currentPiece = null;
-        }
-
-        sm.ClearSelection(board);
-    }
-
 }
