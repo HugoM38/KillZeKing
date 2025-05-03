@@ -6,7 +6,10 @@ public class PieceInfoUI : MonoBehaviour
     public GameObject panel;
     public TextMeshProUGUI infoText;
 
-    private static PieceInfoUI instance;
+    public TextMeshProUGUI turnText;
+
+
+    public static PieceInfoUI instance;
 
     private void Awake()
     {
@@ -30,4 +33,10 @@ public class PieceInfoUI : MonoBehaviour
         if (instance != null)
             instance.panel.SetActive(false);
     }
+
+    public void UpdateTurnDisplay(ChessPiece.PieceColor currentPlayer)
+    {
+        turnText.text = $"Tour : {(currentPlayer == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
+    }
+
 }

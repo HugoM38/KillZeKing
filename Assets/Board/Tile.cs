@@ -40,21 +40,24 @@ public class Tile : MonoBehaviour
     private void OnMouseDown()
     {
         var sm = SelectionManager.Instance;
-        if (sm == null) return;
+        var tm = TurnManager.Instance;
+        if (sm == null || tm == null) return;
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
         // ✅ Cas 1 : clic sur une case contenant une pièce
         if (IsOccupied())
         {
-            // ➤ Si aucune action en cours → (re)sélectionner cette pièce
+            // ❌ Si ce n’est pas ton tour, tu ne peux pas sélectionner cette pièce
+            if (currentPiece.color != tm.currentPlayer)
+                return;
+
             if (sm.currentState == PlayerActionState.None)
             {
                 sm.SelectPiece(currentPiece, board);
                 return;
             }
 
-            // ➤ Si une action est en cours (déplacement ou attaque) → ignorer
             return;
         }
 
@@ -81,6 +84,7 @@ public class Tile : MonoBehaviour
                     oldTile.currentPiece = null;
 
                     sm.ClearSelection(board);
+                    tm.NextTurn(); // 🔄 passer au joueur suivant
                 }
                 break;
 
@@ -97,8 +101,10 @@ public class Tile : MonoBehaviour
                     }
 
                     sm.ClearSelection(board);
+                    tm.NextTurn(); // 🔄 passer au joueur suivant
                 }
                 break;
         }
     }
+
 }
