@@ -45,31 +45,19 @@ public class Tile : MonoBehaviour
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
-        // ✅ Cas 1 : clic sur une case contenant une pièce
-        if (IsOccupied())
+        // ✅ Sélection de pièce possible, quelle que soit la couleur
+        if (IsOccupied() && sm.currentState == PlayerActionState.None)
         {
-            // ❌ Si ce n’est pas ton tour, tu ne peux pas sélectionner cette pièce
-            if (currentPiece.color != tm.currentPlayer)
-                return;
-
-            if (sm.currentState == PlayerActionState.None)
-            {
-                sm.SelectPiece(currentPiece, board);
-                return;
-            }
-
+            sm.SelectPiece(currentPiece, board);
             return;
         }
 
-        // ❌ Cas 2 : aucune pièce sélectionnée → rien à faire
         if (sm.selectedPiece == null)
             return;
 
-        // ❌ Cas 3 : la case n’est pas dans les coups valides → ignorer
         if (!sm.validMoves.Contains(this))
             return;
 
-        // ✅ Cas 4 : action valide (déplacement ou attaque)
         ChessPiece attacker = sm.selectedPiece;
         Vector2Int oldPos = attacker.GetCurrentTilePosition(board);
         Tile oldTile = board[oldPos.x, oldPos.y];
@@ -84,7 +72,7 @@ public class Tile : MonoBehaviour
                     oldTile.currentPiece = null;
 
                     sm.ClearSelection(board);
-                    tm.NextTurn(); // 🔄 passer au joueur suivant
+                    tm.NextTurn();
                 }
                 break;
 
@@ -101,10 +89,9 @@ public class Tile : MonoBehaviour
                     }
 
                     sm.ClearSelection(board);
-                    tm.NextTurn(); // 🔄 passer au joueur suivant
+                    tm.NextTurn();
                 }
                 break;
         }
     }
-
 }

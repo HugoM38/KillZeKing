@@ -3,40 +3,46 @@ using TMPro;
 
 public class PieceInfoUI : MonoBehaviour
 {
-    public GameObject panel;
-    public TextMeshProUGUI infoText;
-
-    public TextMeshProUGUI turnText;
-
-
     public static PieceInfoUI instance;
+
+    public TextMeshProUGUI infoText;
+    public TextMeshProUGUI turnText;
 
     private void Awake()
     {
         instance = this;
-        Hide();
     }
 
-    public static void ShowInfo(ChessPiece piece)
+    private void Start()
     {
-        if (instance == null) return;
+        gameObject.SetActive(true); // 🔒 Forcer actif (même si désactivé dans la scène)
+        ShowNoSelection();
+    }
 
-        instance.panel.SetActive(true);
-        instance.infoText.text =
+    public void ShowInfo(ChessPiece piece)
+    {
+        if (piece == null)
+        {
+            ShowNoSelection();
+            return;
+        }
+
+        infoText.text =
             $"{piece.type} ({piece.color})\n" +
             $"PV : {piece.currentHealth} / {piece.maxHealth}\n" +
             $"ATK : {piece.attackDamage}";
     }
 
-    public static void Hide()
+    public void ShowNoSelection()
     {
-        if (instance != null)
-            instance.panel.SetActive(false);
+        infoText.text = "Aucune pièce sélectionnée";
     }
 
     public void UpdateTurnDisplay(ChessPiece.PieceColor currentPlayer)
     {
-        turnText.text = $"Tour : {(currentPlayer == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
+        if (turnText != null)
+        {
+            turnText.text = $"Tour : {(currentPlayer == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
+        }
     }
-
 }

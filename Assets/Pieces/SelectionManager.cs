@@ -1,5 +1,5 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public enum PlayerActionState
 {
@@ -14,7 +14,6 @@ public class SelectionManager : MonoBehaviour
 
     public ChessPiece selectedPiece;
     public List<Tile> validMoves = new List<Tile>();
-
     public PlayerActionState currentState = PlayerActionState.None;
 
     private void Awake()
@@ -27,27 +26,28 @@ public class SelectionManager : MonoBehaviour
     {
         selectedPiece = piece;
         currentState = PlayerActionState.None;
-
         validMoves.Clear();
+
         foreach (Tile tile in board)
             tile.ClearHighlight();
 
-        PieceInfoUI.ShowInfo(piece);
-        UIButtons.Instance.ShowActionButtons(true); // affichera les boutons
-    }
+        PieceInfoUI.instance.ShowInfo(piece);
 
+        // ✅ N'affiche les boutons que si la pièce appartient au joueur actif
+        bool isOwnPiece = piece.color == TurnManager.Instance.currentPlayer;
+        UIButtons.Instance.ShowActionButtons(isOwnPiece);
+    }
 
     public void ClearSelection(Tile[,] board)
     {
         selectedPiece = null;
-        validMoves.Clear();
         currentState = PlayerActionState.None;
+        validMoves.Clear();
 
         foreach (Tile tile in board)
             tile.ClearHighlight();
 
-        PieceInfoUI.Hide();
+        PieceInfoUI.instance.ShowNoSelection();
         UIButtons.Instance.ShowActionButtons(false);
     }
-
 }
