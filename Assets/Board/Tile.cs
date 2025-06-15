@@ -45,7 +45,6 @@ public class Tile : MonoBehaviour
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
-        // ✅ Sélection de pièce possible, quelle que soit la couleur
         if (IsOccupied() && sm.currentState == PlayerActionState.None)
         {
             sm.SelectPiece(currentPiece, board);
@@ -59,7 +58,7 @@ public class Tile : MonoBehaviour
             return;
 
         ChessPiece attacker = sm.selectedPiece;
-        Vector2Int oldPos = attacker.GetCurrentTilePosition(board);
+        Vector2Int oldPos = attacker.GetCurrentTilePosition();
         Tile oldTile = board[oldPos.x, oldPos.y];
 
         switch (sm.currentState)

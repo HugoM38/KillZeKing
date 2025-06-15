@@ -1,7 +1,7 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public abstract class ChessPiece : MonoBehaviour
+public class ChessPiece : MonoBehaviour
 {
     public enum PieceColor { White, Black }
 
@@ -14,43 +14,111 @@ public abstract class ChessPiece : MonoBehaviour
     public enum PieceType { Pawn, Rook, Knight, Bishop, Queen, King }
     public PieceType type;
 
+    public int movementRange = 1;
+    public int attackRange = 1;
+
     private void Start()
     {
         currentHealth = maxHealth;
-        SpriteRenderer sr = GetComponent<SpriteRenderer>();
+
+        SpriteRenderer sr = GetComponentInChildren<SpriteRenderer>();
         if (sr != null)
-            sr.sortingOrder = 1;
+        {
+            sr.color = color == PieceColor.White ? Color.white : Color.black;
+            sr.sortingOrder = 10; // pour affichage au-dessus des cases
+        }
     }
 
-    public abstract List<Tile> GetAvailableMoves(Tile[,] board, Vector2Int currentPos);
-
-    public Vector2Int GetCurrentTilePosition(Tile[,] board)
+    public virtual List<Vector2Int> GetAvailableMoves(Vector2Int origin, Tile[,] board)
     {
-        for (int x = 0; x < board.GetLength(0); x++)
+        return GetTilesInRange(origin, movementRange, board, isAttack: false);
+    }
+
+    public virtual List<Vector2Int> GetAttackableTiles(Vector2Int origin, Tile[,] board)
+    {
+        return GetTilesInRange(origin, attackRange, board, isAttack: true);
+    }
+
+    private List<Vector2Int> GetTilesInRange(Vector2Int origin, int range, Tile[,] board, bool isAttack)
+    {
+        List<Vector2Int> result = new List<Vector2Int>();
+        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
+        Queue<(Vector2Int pos, int dist)> queue = new Queue<(Vector2Int, int)>();
+
+        visited.Add(origin);
+        queue.Enqueue((origin, 0));
+
+        Vector2Int[] directions = new Vector2Int[]
         {
-            for (int y = 0; y < board.GetLength(1); y++)
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        int boardWidth = board.GetLength(0);
+        int boardHeight = board.GetLength(1);
+
+        while (queue.Count > 0)
+        {
+            var (current, dist) = queue.Dequeue();
+
+            if (dist != 0)
+                result.Add(current);
+
+            if (dist >= range)
+                continue;
+
+            foreach (Vector2Int dir in directions)
             {
-                if (board[x, y].currentPiece == this)
-                    return new Vector2Int(x, y);
+                Vector2Int next = current + dir;
+
+                // Vérifie que la case est sur le plateau
+                if (next.x < 0 || next.x >= boardWidth || next.y < 0 || next.y >= boardHeight)
+                    continue;
+
+                if (visited.Contains(next))
+                    continue;
+
+                visited.Add(next);
+                Tile tile = board[next.x, next.y];
+
+                if (tile.IsOccupied())
+                {
+                    // Pièce ennemie ? => attaquable uniquement
+                    if (isAttack && tile.currentPiece.color != this.color)
+                    {
+                        result.Add(next);
+                    }
+
+                    // Peu importe l'équipe : on arrête la propagation ici
+                    continue;
+                }
+
+                queue.Enqueue((next, dist + 1));
             }
         }
 
-        Debug.LogError("Position de la pièce introuvable sur le plateau !");
-        return Vector2Int.zero;
+        return result;
+    }
+
+    public Vector2Int GetCurrentTilePosition()
+    {
+        if (SelectionManager.Instance.selectedPiece == this)
+            return SelectionManager.Instance.selectedTile.coordinates;
+
+        Debug.LogWarning("[ChessPiece] GetCurrentTilePosition() appelée sur une pièce non sélectionnée.");
+        return new Vector2Int(-1, -1);
     }
 
     public bool TakeDamage(int amount)
     {
         currentHealth -= amount;
-        Debug.Log($"{name} a pris {amount} dégâts → PV restants : {currentHealth}");
-
         if (currentHealth <= 0)
         {
-            Debug.Log($"{name} a été détruit !");
             Destroy(gameObject);
-            return true; // ✅ est mort
+            return true;
         }
-
-        return false; // ✅ encore vivant
+        return false;
     }
 }

@@ -285,6 +285,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   selectedPiece: {fileID: 0}
+  selectedTile: {fileID: 0}
   validMoves: []
   currentState: 0
 --- !u!4 &228782135
@@ -1831,18 +1832,18 @@ MonoBehaviour:
   width: 8
   height: 8
   tileSpacing: 1.1
-  PawnWhitePrefab: {fileID: 7039856520322242455, guid: 97a56334ea93bf84ca714e8eddc4b300, type: 3}
-  PawnBlackPrefab: {fileID: 8581839633388224667, guid: 8708aed27f744bf4f94276947718dba7, type: 3}
-  RookWhitePrefab: {fileID: 7397520256397824227, guid: 3986c57c0ce5b5844931bac583a2bb57, type: 3}
-  RookBlackPrefab: {fileID: 5882912931466363487, guid: 83604b0c0413d624990cff1d892548ae, type: 3}
-  KnightWhitePrefab: {fileID: 185532605578168402, guid: 538981b7310b36540aebe1fcf95b1dc2, type: 3}
-  KnightBlackPrefab: {fileID: 8802839759480827012, guid: 4ff3b3257059f294792ed541b5d7257c, type: 3}
-  BishopWhitePrefab: {fileID: 1362406321572746754, guid: 0ffc16cc49a2dac4aa6d2d8f2a4b62ae, type: 3}
-  BishopBlackPrefab: {fileID: 5306122552072699246, guid: b09b961f9b156e04595298cb3b95a66a, type: 3}
-  QueenWhitePrefab: {fileID: 7447243295570909041, guid: bf6768ef37f4d114989ce64599e14d32, type: 3}
-  QueenBlackPrefab: {fileID: 4642511555867900512, guid: 6bfce41a741c98f4d8cb80c7c7bb40bb, type: 3}
-  KingWhitePrefab: {fileID: 201131189995869508, guid: eebc162f0a38a854988c84fcd215f13f, type: 3}
-  KingBlackPrefab: {fileID: 8477110303226569903, guid: 5a92d0a487beb4d48b871e6d80472359, type: 3}
+  PawnWhitePrefab: {fileID: 4635283891945227307, guid: 97a56334ea93bf84ca714e8eddc4b300, type: 3}
+  PawnBlackPrefab: {fileID: 4867570490190889945, guid: 8708aed27f744bf4f94276947718dba7, type: 3}
+  RookWhitePrefab: {fileID: 5578821058816498430, guid: 3986c57c0ce5b5844931bac583a2bb57, type: 3}
+  RookBlackPrefab: {fileID: 919659695897725170, guid: 83604b0c0413d624990cff1d892548ae, type: 3}
+  KnightWhitePrefab: {fileID: 2216709596656395959, guid: 538981b7310b36540aebe1fcf95b1dc2, type: 3}
+  KnightBlackPrefab: {fileID: 2046990865986622380, guid: 4ff3b3257059f294792ed541b5d7257c, type: 3}
+  BishopWhitePrefab: {fileID: 8239171202794993511, guid: 0ffc16cc49a2dac4aa6d2d8f2a4b62ae, type: 3}
+  BishopBlackPrefab: {fileID: 5754067613248665344, guid: b09b961f9b156e04595298cb3b95a66a, type: 3}
+  QueenWhitePrefab: {fileID: 2272971295106664203, guid: bf6768ef37f4d114989ce64599e14d32, type: 3}
+  QueenBlackPrefab: {fileID: 6791303698933549443, guid: 6bfce41a741c98f4d8cb80c7c7bb40bb, type: 3}
+  KingWhitePrefab: {fileID: 9219897196675138893, guid: eebc162f0a38a854988c84fcd215f13f, type: 3}
+  KingBlackPrefab: {fileID: -3655163205057719704, guid: 5a92d0a487beb4d48b871e6d80472359, type: 3}
 --- !u!4 &1846159932
 Transform:
   m_ObjectHideFlags: 0

@@ -13,6 +13,7 @@ public class SelectionManager : MonoBehaviour
     public static SelectionManager Instance;
 
     public ChessPiece selectedPiece;
+    public Tile selectedTile;
     public List<Tile> validMoves = new List<Tile>();
     public PlayerActionState currentState = PlayerActionState.None;
 
@@ -25,6 +26,18 @@ public class SelectionManager : MonoBehaviour
     public void SelectPiece(ChessPiece piece, Tile[,] board)
     {
         selectedPiece = piece;
+        selectedTile = null;
+
+        // Trouver la tile sur laquelle se trouve la pièce
+        foreach (Tile tile in board)
+        {
+            if (tile.currentPiece == piece)
+            {
+                selectedTile = tile;
+                break;
+            }
+        }
+
         currentState = PlayerActionState.None;
         validMoves.Clear();
 
@@ -33,7 +46,6 @@ public class SelectionManager : MonoBehaviour
 
         PieceInfoUI.instance.ShowInfo(piece);
 
-        // ✅ N'affiche les boutons que si la pièce appartient au joueur actif
         bool isOwnPiece = piece.color == TurnManager.Instance.currentPlayer;
         UIButtons.Instance.ShowActionButtons(isOwnPiece);
     }
@@ -41,6 +53,7 @@ public class SelectionManager : MonoBehaviour
     public void ClearSelection(Tile[,] board)
     {
         selectedPiece = null;
+        selectedTile = null;
         currentState = PlayerActionState.None;
         validMoves.Clear();
 
