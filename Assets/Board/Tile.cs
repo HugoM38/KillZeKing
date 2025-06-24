@@ -60,23 +60,26 @@ public class Tile : MonoBehaviour
         ChessPiece attacker = sm.selectedPiece;
         Vector2Int oldPos = attacker.GetCurrentTilePosition();
         Tile oldTile = board[oldPos.x, oldPos.y];
+        var stats = tm.CurrentStats;
 
         switch (sm.currentState)
         {
             case PlayerActionState.Moving:
-                if (!IsOccupied())
+                if (!IsOccupied() && tm.HasEnoughPM())
                 {
                     attacker.transform.position = transform.position;
                     currentPiece = attacker;
                     oldTile.currentPiece = null;
 
+                    tm.SpendPM();
                     sm.ClearSelection(board);
-                    tm.NextTurn();
+                    PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
+
                 }
                 break;
 
             case PlayerActionState.Attacking:
-                if (IsOccupied() && currentPiece.color != attacker.color)
+                if (IsOccupied() && currentPiece.color != attacker.color && tm.HasEnoughPA())
                 {
                     bool killed = currentPiece.TakeDamage(attacker.attackDamage);
 
@@ -87,8 +90,9 @@ public class Tile : MonoBehaviour
                         oldTile.currentPiece = null;
                     }
 
+                    tm.SpendPA();
                     sm.ClearSelection(board);
-                    tm.NextTurn();
+                    PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
                 }
                 break;
         }

@@ -38,11 +38,11 @@ public class PieceInfoUI : MonoBehaviour
         infoText.text = "Aucune pièce sélectionnée";
     }
 
-    public void UpdateTurnDisplay(ChessPiece.PieceColor currentPlayer)
+    public void UpdateTurnDisplay(ChessPiece.PieceColor player, int pa, int maxPA, int pm, int maxPM)
     {
-        if (turnText != null)
-        {
-            turnText.text = $"Tour : {(currentPlayer == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
-        }
+        string line1 = $"Tour : {(player == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
+        string line2 = $"PA : {pa} / {maxPA}   |   PM : {pm} / {maxPM}";
+        turnText.text = $"{line1}\n{line2}";
     }
+
 }

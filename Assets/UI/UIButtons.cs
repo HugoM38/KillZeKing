@@ -21,6 +21,12 @@ public class UIButtons : MonoBehaviour
 
     public void OnClickMove()
     {
+        if (!TurnManager.Instance.HasEnoughPM())
+        {
+            Debug.Log("Pas assez de PM pour se déplacer.");
+            return;
+        }
+
         SelectionManager.Instance.currentState = PlayerActionState.Moving;
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
@@ -39,8 +45,6 @@ public class UIButtons : MonoBehaviour
             }
         }
 
-        Debug.Log($"[UIButtons] Move: found {tiles.Count} valid tiles");
-
         SelectionManager.Instance.validMoves = tiles;
 
         foreach (Tile tile in board)
@@ -55,6 +59,12 @@ public class UIButtons : MonoBehaviour
 
     public void OnClickAttack()
     {
+        if (!TurnManager.Instance.HasEnoughPA())
+        {
+            Debug.Log("Pas assez de PA pour attaquer.");
+            return;
+        }
+
         SelectionManager.Instance.currentState = PlayerActionState.Attacking;
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
@@ -72,8 +82,6 @@ public class UIButtons : MonoBehaviour
                 tiles.Add(board[pos.x, pos.y]);
             }
         }
-
-        Debug.Log($"[UIButtons] Attack: found {tiles.Count} valid tiles");
 
         SelectionManager.Instance.validMoves = tiles;
 
@@ -94,5 +102,13 @@ public class UIButtons : MonoBehaviour
 
         foreach (Tile tile in board)
             tile.ClearHighlight();
+    }
+
+    public void OnClickEndTurn()
+    {
+        TurnManager.Instance.NextTurn();
+        var tm = TurnManager.Instance;
+        var stats = tm.CurrentStats;
+        PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
     }
 }
