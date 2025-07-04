@@ -1,17 +1,27 @@
 using UnityEngine;
 
+public enum TileType
+{
+    Sand,
+    Water,
+    Earth,
+    Rock
+}
+
 public class Tile : MonoBehaviour
 {
     public Vector2Int coordinates;
     public SpriteRenderer backgroundRenderer;
     public SpriteRenderer highlightRenderer;
     public ChessPiece currentPiece;
+    public TileType tileType = TileType.Earth;
 
-    public void Init(Vector2Int coords, Color color)
+    public void Init(Vector2Int coords, Color color, TileType type = TileType.Earth)
     {
         coordinates = coords;
         backgroundRenderer = GetComponent<SpriteRenderer>();
         backgroundRenderer.color = color;
+        tileType = type;
         ClearHighlight();
     }
 

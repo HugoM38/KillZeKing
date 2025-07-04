@@ -8,6 +8,8 @@ public class BoardGenerator : MonoBehaviour
     public int height = 8;
     public float tileSpacing = 1.1f;
 
+    public TextAsset[] boardLayouts;
+
     private Tile[,] tiles;
 
     public ChessPiece PawnWhitePrefab;
@@ -26,7 +28,8 @@ public class BoardGenerator : MonoBehaviour
 
     void Start()
     {
-        GenerateBoard();
+        BoardLayout layout = LoadRandomLayout();
+        GenerateBoard(layout);
         StartCoroutine(SetupAfterBoard());
     }
 
@@ -42,8 +45,14 @@ public class BoardGenerator : MonoBehaviour
     }
 
 
-    void GenerateBoard()
+    void GenerateBoard(BoardLayout layout)
     {
+        if (layout != null && layout.rows != null && layout.rows.Length > 0)
+        {
+            height = layout.rows.Length;
+            width = layout.rows[0].tiles.Length;
+        }
+
         tiles = new Tile[width, height];
 
         Vector2 boardCenterOffset = new Vector2((width - 1) * tileSpacing / 2f, (height - 1) * tileSpacing / 2f);
@@ -59,8 +68,13 @@ public class BoardGenerator : MonoBehaviour
                 tileGO.name = $"Tile_{x}_{y}";
 
                 Tile tile = tileGO.GetComponent<Tile>();
-                Color tileColor = (x + y) % 2 == 0 ? Color.white : Color.black;
-                tile.Init(new Vector2Int(x, y), tileColor);
+                TileType type = TileType.Earth;
+                if (layout != null && y < layout.rows.Length && x < layout.rows[y].tiles.Length)
+                {
+                    type = layout.rows[y].tiles[x];
+                }
+                Color tileColor = GetColorForType(type);
+                tile.Init(new Vector2Int(x, y), tileColor, type);
 
                 tiles[x, y] = tile;
             }
@@ -161,6 +175,31 @@ public class BoardGenerator : MonoBehaviour
         tile.currentPiece = piece;
 
         Debug.Log($"[OK] {piece.name} placé en ({x},{y})");
+    }
+
+    BoardLayout LoadRandomLayout()
+    {
+        if (boardLayouts == null || boardLayouts.Length == 0)
+            return null;
+
+        int index = Random.Range(0, boardLayouts.Length);
+        string json = boardLayouts[index].text;
+        return JsonUtility.FromJson<BoardLayout>(json);
+    }
+
+    Color GetColorForType(TileType type)
+    {
+        switch (type)
+        {
+            case TileType.Sand:
+                return new Color(0.9f, 0.8f, 0.6f);
+            case TileType.Water:
+                return new Color(0.3f, 0.5f, 0.8f);
+            case TileType.Rock:
+                return Color.gray;
+            default:
+                return new Color(0.5f, 0.4f, 0.3f); // Earth
+        }
     }
 
 

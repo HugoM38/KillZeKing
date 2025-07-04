@@ -1,0 +1,12 @@
+{
+  "rows": [
+    {"tiles": ["Water","Water","Water","Water","Water","Water","Water","Water"]},
+    {"tiles": ["Water","Earth","Earth","Sand","Sand","Earth","Earth","Water"]},
+    {"tiles": ["Water","Rock","Earth","Earth","Earth","Earth","Rock","Water"]},
+    {"tiles": ["Water","Earth","Sand","Rock","Rock","Sand","Earth","Water"]},
+    {"tiles": ["Water","Earth","Sand","Rock","Rock","Sand","Earth","Water"]},
+    {"tiles": ["Water","Rock","Earth","Earth","Earth","Earth","Rock","Water"]},
+    {"tiles": ["Water","Earth","Earth","Sand","Sand","Earth","Earth","Water"]},
+    {"tiles": ["Water","Water","Water","Water","Water","Water","Water","Water"]}
+  ]
+}
