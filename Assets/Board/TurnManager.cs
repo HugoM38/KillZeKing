@@ -4,7 +4,7 @@ public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance;
 
-    public ChessPiece.PieceColor currentPlayer = ChessPiece.PieceColor.White;
+    public BaseUnitScript.Team currentPlayer = BaseUnitScript.Team.Player;
 
     [System.Serializable]
     public class PlayerStats
@@ -15,11 +15,11 @@ public class TurnManager : MonoBehaviour
         public int maxPM = 1;
     }
 
-    public PlayerStats whiteStats = new PlayerStats();
-    public PlayerStats blackStats = new PlayerStats();
+    public PlayerStats playerStats = new PlayerStats();
+    public PlayerStats enemyStats = new PlayerStats();
 
-    private int turnCountWhite = 1;
-    private int turnCountBlack = 0;
+    private int turnCountPlayer = 1;
+    private int turnCountEnemy = 0;
 
     private void Awake()
     {
@@ -28,34 +28,50 @@ public class TurnManager : MonoBehaviour
     }
 
     public PlayerStats CurrentStats =>
-        currentPlayer == ChessPiece.PieceColor.White ? whiteStats : blackStats;
+        currentPlayer == BaseUnitScript.Team.Player ? playerStats : enemyStats;
 
     public void NextTurn()
     {
-        currentPlayer = currentPlayer == ChessPiece.PieceColor.White
-            ? ChessPiece.PieceColor.Black
-            : ChessPiece.PieceColor.White;
+        // Changement de joueur
+        currentPlayer = currentPlayer == BaseUnitScript.Team.Player
+            ? BaseUnitScript.Team.Enemy
+            : BaseUnitScript.Team.Player;
 
-        if (currentPlayer == ChessPiece.PieceColor.White)
-            turnCountWhite++;
+        // Incrément du compteur de tour
+        if (currentPlayer == BaseUnitScript.Team.Player)
+            turnCountPlayer++;
         else
-            turnCountBlack++;
+            turnCountEnemy++;
 
+        int turnCount = currentPlayer == BaseUnitScript.Team.Player ? turnCountPlayer : turnCountEnemy;
         PlayerStats stats = CurrentStats;
 
-        int turnCount = currentPlayer == ChessPiece.PieceColor.White ? turnCountWhite : turnCountBlack;
-
+        // Augmentation progressive de la limite de PA/PM
         if (turnCount > 1)
         {
             stats.maxPA = Mathf.Min(stats.maxPA + 1, 5);
             stats.maxPM = Mathf.Min(stats.maxPM + 1, 5);
+            RechargerEnergieDesUnites();
         }
 
         stats.pa = stats.maxPA;
         stats.pm = stats.maxPM;
-        Debug.Log($"[TurnManager] Tours - Blanc : {turnCountWhite}, Noir : {turnCountBlack}");
-        Debug.Log($"[TurnManager] joue son tour #{turnCount}, maxPA = {stats.maxPA}, maxPM = {stats.maxPM}");
+
+        Debug.Log($"[TurnManager] Tours - Joueur : {turnCountPlayer}, Ennemi : {turnCountEnemy}");
+        Debug.Log($"[TurnManager] {currentPlayer} joue son tour #{turnCount}, maxPA = {stats.maxPA}, maxPM = {stats.maxPM}");
+
         UpdateUI();
+    }
+
+    private void RechargerEnergieDesUnites()
+    {
+        var allUnits = Object.FindObjectsByType<BaseUnitScript>(FindObjectsSortMode.None);
+
+        foreach (var unit in allUnits)
+        {
+            if (unit.team == currentPlayer)
+                unit.RechargerEnergie();
+        }
     }
 
     public bool HasEnoughPA() => CurrentStats.pa > 0;
@@ -77,7 +93,6 @@ public class TurnManager : MonoBehaviour
     {
         PlayerStats stats = CurrentStats;
         PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-
         UIButtons.Instance?.ShowActionButtons(false);
     }
 }

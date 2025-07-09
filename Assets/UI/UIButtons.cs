@@ -90,7 +90,7 @@ public class UIButtons : MonoBehaviour
 
         foreach (Tile tile in tiles)
         {
-            if (tile.IsOccupied() && tile.currentPiece.color != piece.color)
+            if (tile.IsOccupied() && tile.currentPiece.team != piece.team)
                 tile.SetHighlight(Color.red);
         }
     }

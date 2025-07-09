@@ -5,7 +5,7 @@ public class Tile : MonoBehaviour
     public Vector2Int coordinates;
     public SpriteRenderer backgroundRenderer;
     public SpriteRenderer highlightRenderer;
-    public ChessPiece currentPiece;
+    public BaseUnitScript currentPiece;
 
     public void Init(Vector2Int coords, Color color)
     {
@@ -57,7 +57,7 @@ public class Tile : MonoBehaviour
         if (!sm.validMoves.Contains(this))
             return;
 
-        ChessPiece attacker = sm.selectedPiece;
+        BaseUnitScript attacker = sm.selectedPiece;
         Vector2Int oldPos = attacker.GetCurrentTilePosition();
         Tile oldTile = board[oldPos.x, oldPos.y];
         var stats = tm.CurrentStats;
@@ -74,13 +74,18 @@ public class Tile : MonoBehaviour
                     tm.SpendPM();
                     sm.ClearSelection(board);
                     PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-
                 }
                 break;
 
             case PlayerActionState.Attacking:
-                if (IsOccupied() && currentPiece.color != attacker.color && tm.HasEnoughPA())
+                if (IsOccupied() && currentPiece.team != attacker.team && tm.HasEnoughPA())
                 {
+                    if (!attacker.HasEnoughEnergy())
+                    {
+                        Debug.LogWarning("[Tile] Pas assez d'énergie pour attaquer !");
+                        return;
+                    }
+
                     bool killed = currentPiece.TakeDamage(attacker.attackDamage);
 
                     if (killed)
@@ -90,6 +95,7 @@ public class Tile : MonoBehaviour
                         oldTile.currentPiece = null;
                     }
 
+                    attacker.UseEnergy();
                     tm.SpendPA();
                     sm.ClearSelection(board);
                     PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);

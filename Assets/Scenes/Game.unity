@@ -1652,12 +1652,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentPlayer: 0
-  whiteStats:
+  playerStats:
     pa: 1
     pm: 1
     maxPA: 1
     maxPM: 1
-  blackStats:
+  enemyStats:
     pa: 1
     pm: 1
     maxPA: 1
@@ -2109,21 +2109,33 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 2243795782939247772, guid: 91899193edfb14140a8ea6b2d4c28d50, type: 3}
-  width: 8
-  height: 8
+  width: 16
+  height: 16
   tileSpacing: 1.1
-  PawnWhitePrefab: {fileID: 4635283891945227307, guid: 97a56334ea93bf84ca714e8eddc4b300, type: 3}
-  PawnBlackPrefab: {fileID: 4867570490190889945, guid: 8708aed27f744bf4f94276947718dba7, type: 3}
-  RookWhitePrefab: {fileID: 5578821058816498430, guid: 3986c57c0ce5b5844931bac583a2bb57, type: 3}
-  RookBlackPrefab: {fileID: 919659695897725170, guid: 83604b0c0413d624990cff1d892548ae, type: 3}
-  KnightWhitePrefab: {fileID: 2216709596656395959, guid: 538981b7310b36540aebe1fcf95b1dc2, type: 3}
-  KnightBlackPrefab: {fileID: 2046990865986622380, guid: 4ff3b3257059f294792ed541b5d7257c, type: 3}
-  BishopWhitePrefab: {fileID: 8239171202794993511, guid: 0ffc16cc49a2dac4aa6d2d8f2a4b62ae, type: 3}
-  BishopBlackPrefab: {fileID: 5754067613248665344, guid: b09b961f9b156e04595298cb3b95a66a, type: 3}
-  QueenWhitePrefab: {fileID: 2272971295106664203, guid: bf6768ef37f4d114989ce64599e14d32, type: 3}
-  QueenBlackPrefab: {fileID: 6791303698933549443, guid: 6bfce41a741c98f4d8cb80c7c7bb40bb, type: 3}
-  KingWhitePrefab: {fileID: 9219897196675138893, guid: eebc162f0a38a854988c84fcd215f13f, type: 3}
-  KingBlackPrefab: {fileID: -3655163205057719704, guid: 5a92d0a487beb4d48b871e6d80472359, type: 3}
+  guerrierPrefab: {fileID: 2004356706988332546, guid: bb3596cf1de0ad84ca5a04819238fce3, type: 3}
+  chevalierPrefab: {fileID: 2004356706988332546, guid: 22f404fe507676a4ca91e50b5d893f2f, type: 3}
+  berserkerPrefab: {fileID: 2004356706988332546, guid: 4acacfb00cbde714096177836fc81dfe, type: 3}
+  sentinellePrefab: {fileID: 2004356706988332546, guid: 8778f074e90cd3c4f970c67a1d71a2ff, type: 3}
+  magePrefab: {fileID: 2004356706988332546, guid: 5305ab743d9fc834785e1c3ec81f889b, type: 3}
+  sorcierPrefab: {fileID: 2004356706988332546, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
+  occultistePrefab: {fileID: 2004356706988332546, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
+  enchanteurPrefab: {fileID: 2004356706988332546, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
+  archerPrefab: {fileID: 2004356706988332546, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
+  sniperPrefab: {fileID: 2004356706988332546, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
+  rangerPrefab: {fileID: 2004356706988332546, guid: 608303cd70080a0489ad50324934a93c, type: 3}
+  piegeurPrefab: {fileID: 2004356706988332546, guid: f9cc84ddebcced64b8b114a0a5cdd683, type: 3}
+  voleurPrefab: {fileID: 2004356706988332546, guid: fe6cc70144651054ca60ecfea6efbdcb, type: 3}
+  assassinPrefab: {fileID: 2004356706988332546, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
+  espionPrefab: {fileID: 2004356706988332546, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}
+  saboteurPrefab: {fileID: 2004356706988332546, guid: fbf7414239e5a2341bcf901591719b38, type: 3}
+  moinePrefab: {fileID: 2004356706988332546, guid: abc10748244af684da2064f49e7b2a13, type: 3}
+  moineGuerisseurPrefab: {fileID: 2004356706988332546, guid: 61b5b1d1d723e0b469bd0e46546b1ca4, type: 3}
+  maitreKiPrefab: {fileID: 2004356706988332546, guid: 840b6092bf9b80445ae13dcb51c9e265, type: 3}
+  exorcistePrefab: {fileID: 2004356706988332546, guid: 8476f00a5a68f0b419ac8867d0f8d116, type: 3}
+  ingenieurPrefab: {fileID: 2004356706988332546, guid: 97791a20e49d54648ab194ac660c2e80, type: 3}
+  tourellePrefab: {fileID: 2004356706988332546, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
+  barricadePrefab: {fileID: 2004356706988332546, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
+  bouclierPrefab: {fileID: 2004356706988332546, guid: cadbd7698f143b243b8a30f231c12501, type: 3}
 --- !u!4 &1846159932
 Transform:
   m_ObjectHideFlags: 0

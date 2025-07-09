@@ -12,7 +12,7 @@ public class SelectionManager : MonoBehaviour
 {
     public static SelectionManager Instance;
 
-    public ChessPiece selectedPiece;
+    public BaseUnitScript selectedPiece;
     public Tile selectedTile;
     public List<Tile> validMoves = new List<Tile>();
     public PlayerActionState currentState = PlayerActionState.None;
@@ -23,7 +23,7 @@ public class SelectionManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    public void SelectPiece(ChessPiece piece, Tile[,] board)
+    public void SelectPiece(BaseUnitScript piece, Tile[,] board)
     {
         selectedPiece = piece;
         selectedTile = null;
@@ -46,7 +46,7 @@ public class SelectionManager : MonoBehaviour
 
         PieceInfoUI.instance.ShowInfo(piece);
 
-        bool isOwnPiece = piece.color == TurnManager.Instance.currentPlayer;
+        bool isOwnPiece = piece.team == TurnManager.Instance.currentPlayer;
         UIButtons.Instance.ShowActionButtons(isOwnPiece);
     }
 

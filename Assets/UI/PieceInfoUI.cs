@@ -19,7 +19,7 @@ public class PieceInfoUI : MonoBehaviour
         ShowNoSelection();
     }
 
-    public void ShowInfo(ChessPiece piece)
+    public void ShowInfo(BaseUnitScript piece)
     {
         if (piece == null)
         {
@@ -28,9 +28,10 @@ public class PieceInfoUI : MonoBehaviour
         }
 
         infoText.text =
-            $"{piece.type} ({piece.color})\n" +
+            $"{piece.name} ({piece.team})\n" +
             $"PV : {piece.currentHealth} / {piece.maxHealth}\n" +
-            $"ATK : {piece.attackDamage}";
+            $"ATK : {piece.attackDamage}\n" +
+            $"Énergie : {piece.currentEnergy} / {piece.maxEnergy}";
     }
 
     public void ShowNoSelection()
@@ -38,11 +39,12 @@ public class PieceInfoUI : MonoBehaviour
         infoText.text = "Aucune pièce sélectionnée";
     }
 
-    public void UpdateTurnDisplay(ChessPiece.PieceColor player, int pa, int maxPA, int pm, int maxPM)
+    public void UpdateTurnDisplay(BaseUnitScript.Team currentPlayer, int pa, int maxPA, int pm, int maxPM)
     {
-        string line1 = $"Tour : {(player == ChessPiece.PieceColor.White ? "Blanc" : "Noir")}";
-        string line2 = $"PA : {pa} / {maxPA}   |   PM : {pm} / {maxPM}";
-        turnText.text = $"{line1}\n{line2}";
+        if (turnText != null)
+        {
+            string teamName = currentPlayer == BaseUnitScript.Team.Player ? "Joueur" : "Ennemi";
+            turnText.text = $"Tour : {teamName} | PA : {pa}/{maxPA} | PM : {pm}/{maxPM}";
+        }
     }
-
 }
