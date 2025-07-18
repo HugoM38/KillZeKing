@@ -5,103 +5,50 @@ public class UIButtons : MonoBehaviour
 {
     public static UIButtons Instance;
 
-    public GameObject buttonsPanel;
+    public GameObject actionButton;
+    public GameObject cancelButton;
+    public GameObject attackButton;
+    public GameObject specialAttackButton;
+    public GameObject endTurnButton;
 
     private void Awake()
     {
         Instance = this;
-        ShowActionButtons(false);
+        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+        if (endTurnButton != null) endTurnButton.SetActive(true);
+        if (actionButton != null) actionButton.SetActive(false);
+        if (cancelButton != null) cancelButton.SetActive(false);
+        if (attackButton != null) attackButton.SetActive(false);
+        if (specialAttackButton != null) specialAttackButton.SetActive(false);
     }
 
-    public void ShowActionButtons(bool show)
+    public void OnClickAction()
     {
-        if (buttonsPanel != null)
-            buttonsPanel.SetActive(show);
-    }
-
-    public void OnClickMove()
-    {
-        if (!TurnManager.Instance.HasEnoughPM())
-        {
-            Debug.Log("Pas assez de PM pour se déplacer.");
-            return;
-        }
-
-        SelectionManager.Instance.currentState = PlayerActionState.Moving;
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-
-        var piece = SelectionManager.Instance.selectedPiece;
-        var positions = piece.GetAvailableMoves(piece.GetCurrentTilePosition(), board);
-
-        int boardWidth = board.GetLength(0);
-        int boardHeight = board.GetLength(1);
-        List<Tile> tiles = new List<Tile>();
-
-        foreach (Vector2Int pos in positions)
-        {
-            if (pos.x >= 0 && pos.x < boardWidth && pos.y >= 0 && pos.y < boardHeight)
-            {
-                tiles.Add(board[pos.x, pos.y]);
-            }
-        }
-
-        SelectionManager.Instance.validMoves = tiles;
-
-        foreach (Tile tile in board)
-            tile.ClearHighlight();
-
-        foreach (Tile tile in tiles)
-        {
-            if (!tile.IsOccupied())
-                tile.SetHighlight(Color.green);
-        }
-    }
-
-    public void OnClickAttack()
-    {
-        if (!TurnManager.Instance.HasEnoughPA())
-        {
-            Debug.Log("Pas assez de PA pour attaquer.");
-            return;
-        }
-
-        SelectionManager.Instance.currentState = PlayerActionState.Attacking;
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-
-        var piece = SelectionManager.Instance.selectedPiece;
-        var positions = piece.GetAttackableTiles(piece.GetCurrentTilePosition(), board);
-
-        int boardWidth = board.GetLength(0);
-        int boardHeight = board.GetLength(1);
-        List<Tile> tiles = new List<Tile>();
-
-        foreach (Vector2Int pos in positions)
-        {
-            if (pos.x >= 0 && pos.x < boardWidth && pos.y >= 0 && pos.y < boardHeight)
-            {
-                tiles.Add(board[pos.x, pos.y]);
-            }
-        }
-
-        SelectionManager.Instance.validMoves = tiles;
-
-        foreach (Tile tile in board)
-            tile.ClearHighlight();
-
-        foreach (Tile tile in tiles)
-        {
-            if (tile.IsOccupied() && tile.currentPiece.team != piece.team)
-                tile.SetHighlight(Color.red);
-        }
+        SelectionManager.Instance.PrepareActionSelection();
+        RefreshButtons(showAction: false, showCancel: true, showAttackOptions: false);
     }
 
     public void OnClickCancel()
     {
-        SelectionManager.Instance.currentState = PlayerActionState.None;
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
+        SelectionManager.Instance.ResetSelection();
+        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+    }
 
-        foreach (Tile tile in board)
-            tile.ClearHighlight();
+    public void ShowAttackOptions()
+    {
+        RefreshButtons(showAction: false, showCancel: true, showAttackOptions: true);
+    }
+
+    public void OnClickAttack()
+    {
+        SelectionManager.Instance.PerformAttack();
+        RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
+    }
+
+    public void OnClickSpecialAttack()
+    {
+        SelectionManager.Instance.PerformSpecialAttack();
+        RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
     }
 
     public void OnClickEndTurn()
@@ -110,5 +57,16 @@ public class UIButtons : MonoBehaviour
         var tm = TurnManager.Instance;
         var stats = tm.CurrentStats;
         PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
+
+        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+    }
+
+    public void RefreshButtons(bool showAction, bool showCancel, bool showAttackOptions)
+    {
+        actionButton.SetActive(showAction);
+        cancelButton.SetActive(showCancel);
+        attackButton.SetActive(showAttackOptions);
+        specialAttackButton.SetActive(showAttackOptions);
+        Debug.Log("TEST");
     }
 }

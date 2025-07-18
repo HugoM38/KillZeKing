@@ -4,8 +4,7 @@ using UnityEngine;
 public enum PlayerActionState
 {
     None,
-    Moving,
-    Attacking
+    ActionSelected
 }
 
 public class SelectionManager : MonoBehaviour
@@ -27,8 +26,10 @@ public class SelectionManager : MonoBehaviour
     {
         selectedPiece = piece;
         selectedTile = null;
+        currentState = PlayerActionState.None;
+        validMoves.Clear();
 
-        // Trouver la tile sur laquelle se trouve la pièce
+        // Trouver la tile où est la pièce
         foreach (Tile tile in board)
         {
             if (tile.currentPiece == piece)
@@ -38,20 +39,21 @@ public class SelectionManager : MonoBehaviour
             }
         }
 
-        currentState = PlayerActionState.None;
-        validMoves.Clear();
-
         foreach (Tile tile in board)
             tile.ClearHighlight();
 
         PieceInfoUI.instance.ShowInfo(piece);
 
         bool isOwnPiece = piece.team == TurnManager.Instance.currentPlayer;
-        UIButtons.Instance.ShowActionButtons(isOwnPiece);
+        if (isOwnPiece)
+            UIButtons.Instance.RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
     }
 
-    public void ClearSelection(Tile[,] board)
+
+    public void ResetSelection()
     {
+        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
+
         selectedPiece = null;
         selectedTile = null;
         currentState = PlayerActionState.None;
@@ -61,6 +63,99 @@ public class SelectionManager : MonoBehaviour
             tile.ClearHighlight();
 
         PieceInfoUI.instance.ShowNoSelection();
-        UIButtons.Instance.ShowActionButtons(false);
+        PieceInfoUI.instance.ShowTargetInfo(null);
+
+        UIButtons.Instance.RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+    }
+
+    public void PrepareActionSelection()
+    {
+        if (selectedPiece == null)
+        {
+            Debug.LogWarning("[SelectionManager] Aucun pion sélectionné.");
+            return;
+        }
+
+        currentState = PlayerActionState.ActionSelected;
+        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
+        Vector2Int origin = selectedPiece.GetCurrentTilePosition();
+
+        validMoves.Clear();
+
+        foreach (Tile tile in board)
+            tile.ClearHighlight();
+
+        if (TurnManager.Instance.HasEnoughPM())
+        {
+            var movePositions = selectedPiece.GetAvailableMoves(origin, board);
+
+            foreach (var pos in movePositions)
+            {
+                Tile tile = board[pos.x, pos.y];
+                if (!tile.IsOccupied())
+                {
+                    tile.SetHighlight(Color.blue);
+                    validMoves.Add(tile);
+                }
+            }
+        }
+
+        if (TurnManager.Instance.HasEnoughPA() && selectedPiece.currentEnergy > 0)
+        {
+            var attackPositions = selectedPiece.GetAttackableTiles(origin, board);
+
+            foreach (var pos in attackPositions)
+            {
+                Tile tile = board[pos.x, pos.y];
+                if (tile.IsOccupied() && tile.currentPiece.team != selectedPiece.team)
+                {
+                    tile.SetHighlight(Color.red);
+                    validMoves.Add(tile);
+                }
+            }
+        }
+    }
+
+
+    public void PerformAttack()
+    {
+        if (selectedPiece == null || selectedTile == null)
+        {
+            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque.");
+            return;
+        }
+
+        BaseUnitScript targetPiece = selectedTile.currentPiece;
+
+        if (targetPiece != null && targetPiece.team != selectedPiece.team)
+        {
+            targetPiece.TakeDamage(selectedPiece.attackDamage);
+            selectedPiece.UseEnergy();
+            TurnManager.Instance.SpendPA();
+            Debug.Log($"Attaque normale sur {targetPiece.name}");
+            PieceInfoUI.instance.ShowTargetInfo(null);
+            ResetSelection();
+        }
+    }
+
+    public void PerformSpecialAttack()
+    {
+        if (selectedPiece == null || selectedTile == null)
+        {
+            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque spéciale.");
+            return;
+        }
+
+        BaseUnitScript targetPiece = selectedTile.currentPiece;
+
+        if (targetPiece != null && targetPiece.team != selectedPiece.team)
+        {
+            selectedPiece.SpecialAbility(targetPiece);
+            selectedPiece.UseEnergy();
+            TurnManager.Instance.SpendPA();
+            Debug.Log($"Attaque spéciale sur {targetPiece.name}");
+            PieceInfoUI.instance.ShowTargetInfo(null);
+            ResetSelection();
+        }
     }
 }

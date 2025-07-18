@@ -47,4 +47,22 @@ public class PieceInfoUI : MonoBehaviour
             turnText.text = $"Tour : {teamName} | PA : {pa}/{maxPA} | PM : {pm}/{maxPM}";
         }
     }
+
+    public TextMeshProUGUI targetInfoText;
+
+    public void ShowTargetInfo(BaseUnitScript target)
+    {
+        if (target == null)
+        {
+            targetInfoText.text = "";
+            return;
+        }
+
+        targetInfoText.text =
+            $"<b>Ennemi : {target.name}</b>\n" +
+            $"PV : {target.currentHealth} / {target.maxHealth}\n" +
+            $"ATK : {target.attackDamage}\n" +
+            $"Énergie : {target.currentEnergy} / {target.maxEnergy}";
+    }
+
 }

@@ -101,11 +101,17 @@ public class BaseUnitScript : MonoBehaviour
     public Vector2Int GetCurrentTilePosition()
     {
         if (SelectionManager.Instance.selectedPiece == this)
-            return SelectionManager.Instance.selectedTile.coordinates;
+        {
+            if (SelectionManager.Instance.selectedTile != null)
+                return SelectionManager.Instance.selectedTile.coordinates;
+            else
+                Debug.LogWarning("[BaseUnitScript] Aucun tile sélectionné pour la pièce.");
+        }
 
         Debug.LogWarning("[BaseUnitScript] GetCurrentTilePosition() appelée sur une pièce non sélectionnée.");
         return new Vector2Int(-1, -1);
     }
+
 
     public bool TakeDamage(int amount)
     {
@@ -137,6 +143,11 @@ public class BaseUnitScript : MonoBehaviour
     {
         currentEnergy = Mathf.Min(maxEnergy, currentEnergy + 1);
         Debug.Log($"[Énergie] {name} : {currentEnergy}/{maxEnergy}");
+    }
+
+    public virtual void SpecialAbility(BaseUnitScript target)
+    {
+        Debug.Log($"{name} utilise sa compétence spéciale sur {target.name} (par défaut, aucun effet).");
     }
 
 }

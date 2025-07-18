@@ -40,67 +40,67 @@ public class Tile : MonoBehaviour
     private void OnMouseDown()
     {
         var sm = SelectionManager.Instance;
-        var tm = TurnManager.Instance;
-        if (sm == null || tm == null) return;
+        if (sm == null) return;
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
+        // Cas 1 : clic sur une pièce au repos
         if (IsOccupied() && sm.currentState == PlayerActionState.None)
         {
             sm.SelectPiece(currentPiece, board);
             return;
         }
 
+        // Cas 2 : aucune pièce sélectionnée => rien
         if (sm.selectedPiece == null)
             return;
 
-        if (!sm.validMoves.Contains(this))
-            return;
-
-        BaseUnitScript attacker = sm.selectedPiece;
-        Vector2Int oldPos = attacker.GetCurrentTilePosition();
-        Tile oldTile = board[oldPos.x, oldPos.y];
-        var stats = tm.CurrentStats;
-
-        switch (sm.currentState)
+        // Cas 3 : action sélectionnée, alors on agit selon la couleur
+        if (sm.currentState == PlayerActionState.ActionSelected)
         {
-            case PlayerActionState.Moving:
-                if (!IsOccupied() && tm.HasEnoughPM())
+            Color tileColor = highlightRenderer.color;
+
+            if (tileColor == Color.blue)
+            {
+                // Déplacement
+                MoveSelectedPieceToThisTile(board);
+            }
+            else if (tileColor == Color.red)
+            {
+                // Sélection d'une cible ennemie
+                if (currentPiece != null && currentPiece.team != sm.selectedPiece.team)
                 {
-                    attacker.transform.position = transform.position;
-                    currentPiece = attacker;
-                    oldTile.currentPiece = null;
-
-                    tm.SpendPM();
-                    sm.ClearSelection(board);
-                    PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
+                    sm.selectedTile = this;
+                    PieceInfoUI.instance.ShowTargetInfo(currentPiece);
+                    UIButtons.Instance.ShowAttackOptions();
                 }
-                break;
-
-            case PlayerActionState.Attacking:
-                if (IsOccupied() && currentPiece.team != attacker.team && tm.HasEnoughPA())
-                {
-                    if (!attacker.HasEnoughEnergy())
-                    {
-                        Debug.LogWarning("[Tile] Pas assez d'énergie pour attaquer !");
-                        return;
-                    }
-
-                    bool killed = currentPiece.TakeDamage(attacker.attackDamage);
-
-                    if (killed)
-                    {
-                        attacker.transform.position = transform.position;
-                        currentPiece = attacker;
-                        oldTile.currentPiece = null;
-                    }
-
-                    attacker.UseEnergy();
-                    tm.SpendPA();
-                    sm.ClearSelection(board);
-                    PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-                }
-                break;
+            }
         }
+    }
+
+    private void MoveSelectedPieceToThisTile(Tile[,] board)
+    {
+        var sm = SelectionManager.Instance;
+        var tm = TurnManager.Instance;
+
+        if (!tm.HasEnoughPM())
+        {
+            Debug.Log("Pas assez de PM pour se déplacer.");
+            return;
+        }
+
+        BaseUnitScript selectedPiece = sm.selectedPiece;
+        Vector2Int oldPos = selectedPiece.GetCurrentTilePosition();
+        Tile oldTile = board[oldPos.x, oldPos.y];
+
+        selectedPiece.transform.position = transform.position;
+        currentPiece = selectedPiece;
+        oldTile.currentPiece = null;
+
+        tm.SpendPM();
+        sm.ResetSelection();
+
+        var stats = tm.CurrentStats;
+        PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
     }
 }

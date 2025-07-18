@@ -32,12 +32,10 @@ public class TurnManager : MonoBehaviour
 
     public void NextTurn()
     {
-        // Changement de joueur
         currentPlayer = currentPlayer == BaseUnitScript.Team.Player
             ? BaseUnitScript.Team.Enemy
             : BaseUnitScript.Team.Player;
 
-        // Incrément du compteur de tour
         if (currentPlayer == BaseUnitScript.Team.Player)
             turnCountPlayer++;
         else
@@ -46,12 +44,10 @@ public class TurnManager : MonoBehaviour
         int turnCount = currentPlayer == BaseUnitScript.Team.Player ? turnCountPlayer : turnCountEnemy;
         PlayerStats stats = CurrentStats;
 
-        // Augmentation progressive de la limite de PA/PM
         if (turnCount > 1)
         {
             stats.maxPA = Mathf.Min(stats.maxPA + 1, 5);
             stats.maxPM = Mathf.Min(stats.maxPM + 1, 5);
-            RechargerEnergieDesUnites();
         }
 
         stats.pa = stats.maxPA;
@@ -60,6 +56,7 @@ public class TurnManager : MonoBehaviour
         Debug.Log($"[TurnManager] Tours - Joueur : {turnCountPlayer}, Ennemi : {turnCountEnemy}");
         Debug.Log($"[TurnManager] {currentPlayer} joue son tour #{turnCount}, maxPA = {stats.maxPA}, maxPM = {stats.maxPM}");
 
+        RechargerEnergieDesUnites();
         UpdateUI();
     }
 
@@ -93,6 +90,8 @@ public class TurnManager : MonoBehaviour
     {
         PlayerStats stats = CurrentStats;
         PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-        UIButtons.Instance?.ShowActionButtons(false);
+
+        // Masquer les boutons au changement de tour
+        UIButtons.Instance?.RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
     }
 }
