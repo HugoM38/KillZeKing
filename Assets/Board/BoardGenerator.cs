@@ -11,7 +11,7 @@ public class BoardGenerator : MonoBehaviour
     private Tile[,] tiles;
 
     [Header("Guerriers")]
-    public BaseUnitScript guerrierPrefab;
+    public GuerrierScript guerrierPrefab;
     public BaseUnitScript chevalierPrefab;
     public BaseUnitScript berserkerPrefab;
     public BaseUnitScript sentinellePrefab;

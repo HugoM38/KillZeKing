@@ -15,6 +15,7 @@ public class SelectionManager : MonoBehaviour
     public Tile selectedTile;
     public List<Tile> validMoves = new List<Tile>();
     public PlayerActionState currentState = PlayerActionState.None;
+    public bool targetSelected = false;
 
     private void Awake()
     {
@@ -53,7 +54,7 @@ public class SelectionManager : MonoBehaviour
     public void ResetSelection()
     {
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-
+        targetSelected = false;
         selectedPiece = null;
         selectedTile = null;
         currentState = PlayerActionState.None;
@@ -130,7 +131,7 @@ public class SelectionManager : MonoBehaviour
         if (targetPiece != null && targetPiece.team != selectedPiece.team)
         {
             targetPiece.TakeDamage(selectedPiece.attackDamage);
-            selectedPiece.UseEnergy();
+            selectedPiece.UseEnergy(1);
             TurnManager.Instance.SpendPA();
             Debug.Log($"Attaque normale sur {targetPiece.name}");
             PieceInfoUI.instance.ShowTargetInfo(null);
@@ -151,7 +152,7 @@ public class SelectionManager : MonoBehaviour
         if (targetPiece != null && targetPiece.team != selectedPiece.team)
         {
             selectedPiece.SpecialAbility(targetPiece);
-            selectedPiece.UseEnergy();
+            selectedPiece.UseEnergy(selectedPiece.maxEnergy);
             TurnManager.Instance.SpendPA();
             Debug.Log($"Attaque spéciale sur {targetPiece.name}");
             PieceInfoUI.instance.ShowTargetInfo(null);

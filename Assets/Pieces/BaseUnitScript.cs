@@ -134,9 +134,9 @@ public class BaseUnitScript : MonoBehaviour
         return currentEnergy > 0;
     }
 
-    public void UseEnergy()
+    public void UseEnergy(int amount)
     {
-        currentEnergy = Mathf.Max(0, currentEnergy - 1);
+        currentEnergy = Mathf.Max(0, currentEnergy - amount);
     }
 
     public void RechargerEnergie()

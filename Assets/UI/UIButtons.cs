@@ -53,6 +53,7 @@ public class UIButtons : MonoBehaviour
 
     public void OnClickEndTurn()
     {
+        SelectionManager.Instance.ResetSelection();
         TurnManager.Instance.NextTurn();
         var tm = TurnManager.Instance;
         var stats = tm.CurrentStats;
@@ -66,7 +67,14 @@ public class UIButtons : MonoBehaviour
         actionButton.SetActive(showAction);
         cancelButton.SetActive(showCancel);
         attackButton.SetActive(showAttackOptions);
-        specialAttackButton.SetActive(showAttackOptions);
-        Debug.Log("TEST");
+        if (SelectionManager.Instance.selectedPiece != null &&
+            SelectionManager.Instance.selectedPiece.currentEnergy == SelectionManager.Instance.selectedPiece.maxEnergy)
+        {
+            specialAttackButton.SetActive(showAttackOptions);
+        }
+        else
+        {
+            specialAttackButton.SetActive(false);
+        }
     }
 }

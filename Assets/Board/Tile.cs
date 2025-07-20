@@ -44,35 +44,39 @@ public class Tile : MonoBehaviour
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
-        // Cas 1 : clic sur une pièce au repos
+        // Si aucune pièce sélectionnée et clic sur une pièce
         if (IsOccupied() && sm.currentState == PlayerActionState.None)
         {
             sm.SelectPiece(currentPiece, board);
             return;
         }
 
-        // Cas 2 : aucune pièce sélectionnée => rien
         if (sm.selectedPiece == null)
             return;
 
-        // Cas 3 : action sélectionnée, alors on agit selon la couleur
         if (sm.currentState == PlayerActionState.ActionSelected)
         {
             Color tileColor = highlightRenderer.color;
 
             if (tileColor == Color.blue)
             {
-                // Déplacement
+                if (sm.targetSelected)
+                {
+                    Debug.Log("Impossible de se déplacer après avoir sélectionné une cible.");
+                    return;
+                }
                 MoveSelectedPieceToThisTile(board);
+                return;
             }
             else if (tileColor == Color.red)
             {
-                // Sélection d'une cible ennemie
                 if (currentPiece != null && currentPiece.team != sm.selectedPiece.team)
                 {
                     sm.selectedTile = this;
+                    sm.targetSelected = true;
                     PieceInfoUI.instance.ShowTargetInfo(currentPiece);
                     UIButtons.Instance.ShowAttackOptions();
+                    return;
                 }
             }
         }
