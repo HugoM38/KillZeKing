@@ -30,7 +30,6 @@ public class SelectionManager : MonoBehaviour
         currentState = PlayerActionState.None;
         validMoves.Clear();
 
-        // Trouver la tile où est la pièce
         foreach (Tile tile in board)
         {
             if (tile.currentPiece == piece)
@@ -50,7 +49,6 @@ public class SelectionManager : MonoBehaviour
             UIButtons.Instance.RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
     }
 
-
     public void ResetSelection()
     {
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
@@ -69,6 +67,101 @@ public class SelectionManager : MonoBehaviour
         UIButtons.Instance.RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
     }
 
+    public void PerformAttack()
+    {
+        if (selectedPiece == null || selectedTile == null)
+        {
+            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque.");
+            return;
+        }
+
+        BaseUnitScript targetPiece = selectedTile.currentPiece;
+        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
+
+        if (targetPiece != null && targetPiece.team != selectedPiece.team)
+        {
+            int previousHP = targetPiece.currentHealth;
+
+            targetPiece.TakeDamage(selectedPiece.attackDamage);
+            selectedPiece.UseEnergy(1);
+            TurnManager.Instance.SpendPA();
+
+            Debug.Log($"{selectedPiece.name} attaque {targetPiece.name} et inflige {selectedPiece.attackDamage} dégâts.");
+
+            if (targetPiece.currentHealth <= 0 && previousHP > 0)
+            {
+                Debug.Log($"{selectedPiece.name} a tué {targetPiece.name} !");
+                KillTargetAndMove(board);
+            }
+
+            PieceInfoUI.instance.ShowTargetInfo(null);
+            ResetSelection();
+        }
+    }
+
+    public void PerformSpecialAttack()
+    {
+        if (selectedPiece == null || selectedTile == null)
+        {
+            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque spéciale.");
+            return;
+        }
+
+        BaseUnitScript targetPiece = selectedTile.currentPiece;
+        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
+
+        if (targetPiece != null && targetPiece.team != selectedPiece.team)
+        {
+            int previousHP = targetPiece.currentHealth;
+
+            selectedPiece.UseEnergy(selectedPiece.maxEnergy);
+            selectedPiece.SpecialAbility(targetPiece);
+            TurnManager.Instance.SpendPA();
+
+            if (targetPiece.currentHealth <= 0 && previousHP > 0)
+            {
+                Debug.Log($"{selectedPiece.name} a tué {targetPiece.name} avec une attaque spéciale !");
+                KillTargetAndMove(board);
+            }
+
+            Debug.Log($"Attaque spéciale sur {targetPiece.name}");
+            PieceInfoUI.instance.ShowTargetInfo(null);
+            ResetSelection();
+        }
+    }
+
+    private void KillTargetAndMove(Tile[,] board)
+    {
+        Tile attackerTile = null;
+        Tile targetTile = selectedTile;
+
+        foreach (Tile tile in board)
+        {
+            if (tile.currentPiece == selectedPiece)
+            {
+                attackerTile = tile;
+                break;
+            }
+        }
+
+        if (attackerTile == null)
+        {
+            Debug.LogError("Attacker tile introuvable !");
+            return;
+        }
+
+        BaseUnitScript targetPiece = targetTile.currentPiece;
+        if (targetPiece != null)
+        {
+            Destroy(targetPiece.gameObject);
+        }
+
+        targetTile.MovePieceFrom(attackerTile);
+
+        Debug.Log($"{selectedPiece.name} s'est déplacé de {attackerTile.coordinates} à {targetTile.coordinates}.");
+    }
+
+
     public void PrepareActionSelection()
     {
         if (selectedPiece == null)
@@ -85,6 +178,32 @@ public class SelectionManager : MonoBehaviour
 
         foreach (Tile tile in board)
             tile.ClearHighlight();
+
+        Tile selfTile = board[origin.x, origin.y];
+        selfTile.SetHighlight(Color.yellow);
+
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            Vector2Int.up,
+            Vector2Int.down,
+            Vector2Int.left,
+            Vector2Int.right
+        };
+
+        foreach (Vector2Int dir in directions)
+        {
+            Vector2Int adjacentPos = origin + dir;
+            if (adjacentPos.x >= 0 && adjacentPos.x < board.GetLength(0) &&
+                adjacentPos.y >= 0 && adjacentPos.y < board.GetLength(1))
+            {
+                Tile adjacentTile = board[adjacentPos.x, adjacentPos.y];
+                if (adjacentTile.IsOccupied() && adjacentTile.currentPiece.team == selectedPiece.team)
+                {
+                    adjacentTile.SetHighlight(Color.green);
+                    validMoves.Add(adjacentTile);
+                }
+            }
+        }
 
         if (TurnManager.Instance.HasEnoughPM())
         {
@@ -114,49 +233,6 @@ public class SelectionManager : MonoBehaviour
                     validMoves.Add(tile);
                 }
             }
-        }
-    }
-
-
-    public void PerformAttack()
-    {
-        if (selectedPiece == null || selectedTile == null)
-        {
-            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque.");
-            return;
-        }
-
-        BaseUnitScript targetPiece = selectedTile.currentPiece;
-
-        if (targetPiece != null && targetPiece.team != selectedPiece.team)
-        {
-            targetPiece.TakeDamage(selectedPiece.attackDamage);
-            selectedPiece.UseEnergy(1);
-            TurnManager.Instance.SpendPA();
-            Debug.Log($"Attaque normale sur {targetPiece.name}");
-            PieceInfoUI.instance.ShowTargetInfo(null);
-            ResetSelection();
-        }
-    }
-
-    public void PerformSpecialAttack()
-    {
-        if (selectedPiece == null || selectedTile == null)
-        {
-            Debug.LogWarning("Aucune pièce ou case sélectionnée pour l'attaque spéciale.");
-            return;
-        }
-
-        BaseUnitScript targetPiece = selectedTile.currentPiece;
-
-        if (targetPiece != null && targetPiece.team != selectedPiece.team)
-        {
-            selectedPiece.SpecialAbility(targetPiece);
-            selectedPiece.UseEnergy(selectedPiece.maxEnergy);
-            TurnManager.Instance.SpendPA();
-            Debug.Log($"Attaque spéciale sur {targetPiece.name}");
-            PieceInfoUI.instance.ShowTargetInfo(null);
-            ResetSelection();
         }
     }
 }

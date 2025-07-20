@@ -424,6 +424,7 @@ MonoBehaviour:
   selectedTile: {fileID: 0}
   validMoves: []
   currentState: 0
+  targetSelected: 0
 --- !u!4 &228782135
 Transform:
   m_ObjectHideFlags: 0
@@ -2616,10 +2617,10 @@ MonoBehaviour:
   width: 16
   height: 16
   tileSpacing: 1.1
-  guerrierPrefab: {fileID: 2004356706988332546, guid: bb3596cf1de0ad84ca5a04819238fce3, type: 3}
-  chevalierPrefab: {fileID: 2004356706988332546, guid: 22f404fe507676a4ca91e50b5d893f2f, type: 3}
-  berserkerPrefab: {fileID: 2004356706988332546, guid: 4acacfb00cbde714096177836fc81dfe, type: 3}
-  sentinellePrefab: {fileID: 2004356706988332546, guid: 8778f074e90cd3c4f970c67a1d71a2ff, type: 3}
+  guerrierPrefab: {fileID: -9212119070863073786, guid: bb3596cf1de0ad84ca5a04819238fce3, type: 3}
+  chevalierPrefab: {fileID: -8399190187655513365, guid: 22f404fe507676a4ca91e50b5d893f2f, type: 3}
+  berserkerPrefab: {fileID: 789000645201176467, guid: 4acacfb00cbde714096177836fc81dfe, type: 3}
+  sentinellePrefab: {fileID: 8554839351966884592, guid: 8778f074e90cd3c4f970c67a1d71a2ff, type: 3}
   magePrefab: {fileID: 2004356706988332546, guid: 5305ab743d9fc834785e1c3ec81f889b, type: 3}
   sorcierPrefab: {fileID: 2004356706988332546, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
   occultistePrefab: {fileID: 2004356706988332546, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}

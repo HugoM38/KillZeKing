@@ -42,13 +42,13 @@ public class UIButtons : MonoBehaviour
     public void OnClickAttack()
     {
         SelectionManager.Instance.PerformAttack();
-        RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
+        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
     }
 
     public void OnClickSpecialAttack()
     {
         SelectionManager.Instance.PerformSpecialAttack();
-        RefreshButtons(showAction: true, showCancel: false, showAttackOptions: false);
+        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
     }
 
     public void OnClickEndTurn()

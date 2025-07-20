@@ -1,61 +1,34 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-public class BerserkerScript : BaseUnitScript, ISpecialActionCommand
+public class BerserkerScript : BaseUnitScript
 {
-    private Tile selectedTileForSpecial;
-
-    public void PrepareAction()
+    public override void SpecialAbility(BaseUnitScript target)
     {
-        if (currentEnergy < maxEnergy)
+        if (target == null || target.team == this.team)
         {
-            Debug.Log($"{unitName} n'a pas assez d'énergie pour préparer l'attaque spéciale.");
+            Debug.LogWarning("Cible invalide pour l'attaque spéciale du Berserker.");
             return;
         }
 
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-        Vector2Int origin = GetCurrentTilePosition();
-        selectedTileForSpecial = board[origin.x, origin.y];
+        int previousHP = target.currentHealth;
 
-        selectedTileForSpecial.SetHighlight(Color.yellow);
-        SelectionManager.Instance.validMoves.Clear();
-        SelectionManager.Instance.validMoves.Add(selectedTileForSpecial);
+        target.TakeDamage(attackDamage);
+        Debug.Log($"{name} utilise son attaque spéciale et inflige {attackDamage} dégâts à {target.name}");
 
-        Debug.Log($"{unitName} prépare son attaque spéciale.");
-    }
-
-    public void ExecuteAction()
-    {
-        if (currentEnergy < maxEnergy)
+        if (target.currentHealth <= 0 && previousHP > 0)
         {
-            Debug.Log($"{unitName} n'a pas assez d'énergie pour lancer l'attaque spéciale.");
-            return;
+            TurnManager.Instance.CurrentStats.pa = TurnManager.Instance.CurrentStats.pa + 1;
+            Heal(1);
+            Debug.Log($"{name} a tué {target.name} : +1 PA pour le joueur et +1 PV !");
+            UseEnergy(maxEnergy * -1);
+
         }
-
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-        Vector2Int origin = GetCurrentTilePosition();
-        List<Vector2Int> adjacentPositions = GetTilesInRange(origin, 1, board, true);
-
-        int enemiesHit = 0;
-        foreach (Vector2Int pos in adjacentPositions)
-        {
-            Tile tile = board[pos.x, pos.y];
-            if (tile.IsOccupied() && tile.currentPiece.team != this.team)
-            {
-                tile.currentPiece.TakeDamage(attackPower);
-                enemiesHit++;
-                Debug.Log($"{unitName} inflige {attackPower} dégâts à {tile.currentPiece.unitName}");
-            }
-        }
-
-        Heal(enemiesHit);
-        UseEnergy(maxEnergy);
-        Debug.Log($"{unitName} a frappé {enemiesHit} ennemis avec son attaque spéciale.");
     }
 
     private void Heal(int amount)
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        Debug.Log($"{unitName} récupère {amount} PV. Santé actuelle : {currentHealth}/{maxHealth}");
+        Debug.Log($"{name} récupère {amount} PV. Santé actuelle : {currentHealth}/{maxHealth}");
     }
 }

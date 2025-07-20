@@ -1,19 +1,31 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class SentinelleScript : BaseUnitScript
 {
     public override void SpecialAbility(BaseUnitScript target)
     {
-        int baseDamage = attackDamage;
-        int damage = Mathf.CeilToInt(baseDamage * 1.5f);
-        target.TakeDamage(damage);
-
-        float chance = Random.value;
-        if (chance <= 0.25f)
+        if (target == null || target.team == this.team)
         {
-            target.UseEnergy(1);
+            Debug.LogWarning("Cible invalide pour l'attaque spéciale de la Sentinelle.");
+            return;
+        }
+
+        int previousHP = target.currentHealth;
+
+        target.TakeDamage(attackDamage);
+        Debug.Log($"{name} utilise son attaque spéciale et inflige {attackDamage} dégâts à {target.name}");
+
+        if (target.currentHealth <= 0 && previousHP > 0)
+        {
+            maxHealth += 1;
+            Heal(2);
+
+            Debug.Log($"{name} a tué {target.name} : +2 PV et +1 PV Max. Santé actuelle : {currentHealth}/{maxHealth}");
         }
     }
 
+    private void Heal(int amount)
+    {
+        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
+    }
 }

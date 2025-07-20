@@ -44,7 +44,6 @@ public class Tile : MonoBehaviour
 
         Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
 
-        // Si aucune pièce sélectionnée et clic sur une pièce
         if (IsOccupied() && sm.currentState == PlayerActionState.None)
         {
             sm.SelectPiece(currentPiece, board);
@@ -60,38 +59,24 @@ public class Tile : MonoBehaviour
 
             if (tileColor == Color.blue)
             {
-                if (sm.targetSelected)
-                {
-                    Debug.Log("Impossible de se déplacer après avoir sélectionné une cible.");
-                    return;
-                }
                 MoveSelectedPieceToThisTile(board);
-                return;
             }
             else if (tileColor == Color.red)
             {
                 if (currentPiece != null && currentPiece.team != sm.selectedPiece.team)
                 {
                     sm.selectedTile = this;
-                    sm.targetSelected = true;
                     PieceInfoUI.instance.ShowTargetInfo(currentPiece);
                     UIButtons.Instance.ShowAttackOptions();
-                    return;
                 }
             }
         }
     }
 
-    private void MoveSelectedPieceToThisTile(Tile[,] board)
+    public void MoveSelectedPieceToThisTile(Tile[,] board)
     {
         var sm = SelectionManager.Instance;
         var tm = TurnManager.Instance;
-
-        if (!tm.HasEnoughPM())
-        {
-            Debug.Log("Pas assez de PM pour se déplacer.");
-            return;
-        }
 
         BaseUnitScript selectedPiece = sm.selectedPiece;
         Vector2Int oldPos = selectedPiece.GetCurrentTilePosition();
@@ -106,5 +91,22 @@ public class Tile : MonoBehaviour
 
         var stats = tm.CurrentStats;
         PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
+    }
+
+    public void MovePieceFrom(Tile sourceTile)
+    {
+        if (sourceTile == null || sourceTile.currentPiece == null)
+        {
+            Debug.LogWarning("Tentative de déplacer une pièce depuis une tile vide.");
+            return;
+        }
+
+        BaseUnitScript movingPiece = sourceTile.currentPiece;
+
+        movingPiece.transform.position = transform.position;
+        currentPiece = movingPiece;
+        sourceTile.currentPiece = null;
+
+        Debug.Log($"{movingPiece.name} déplacé de {sourceTile.coordinates} à {coordinates}");
     }
 }
