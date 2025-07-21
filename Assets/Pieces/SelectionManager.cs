@@ -64,6 +64,11 @@ public class SelectionManager : MonoBehaviour
                 );
             }
         }
+        else
+        {
+            targetTile = tile;
+            ExecuteCurrentAction();
+        }
     }
 
     public void SetAction(PlayerAction action)
@@ -77,25 +82,39 @@ public class SelectionManager : MonoBehaviour
             var piece = selectedTile.currentPiece;
 
             switch (currentAction)
-            {   
+            {
                 case PlayerAction.None:
                     ClearSelection();
                     break;
                 case PlayerAction.Move:
                     tileOptions = piece.ShowMoveOptions();
                     UIButtons.Instance.SetButtonsVisibility(
-                    showMove: false,
-                    showAttack: false,
-                    showSpecialAttack: false,
-                    showCancel: true,
-                    showEndTurn: true
-                );
+                        showMove: false,
+                        showAttack: false,
+                        showSpecialAttack: false,
+                        showCancel: true,
+                        showEndTurn: true
+                    );
                     break;
                 case PlayerAction.Attack:
-                    piece.ShowAttackOptions();
+                    tileOptions = piece.ShowAttackOptions();
+                    UIButtons.Instance.SetButtonsVisibility(
+                        showMove: false,
+                        showAttack: false,
+                        showSpecialAttack: false,
+                        showCancel: true,
+                        showEndTurn: true
+                    );
                     break;
                 case PlayerAction.SpecialAttack:
                     piece.ShowSpecialAttackOptions();
+                    UIButtons.Instance.SetButtonsVisibility(
+                        showMove: false,
+                        showAttack: false,
+                        showSpecialAttack: false,
+                        showCancel: true,
+                        showEndTurn: true
+                    );
                     break;
             }
         }
@@ -122,26 +141,11 @@ public class SelectionManager : MonoBehaviour
                 MoveTo();
                 break;
             case PlayerAction.Attack:
-                piece.Attack(targetTile.currentPiece);
+                AttackTarget();
                 break;
             case PlayerAction.SpecialAttack:
                 piece.SpecialAttack(targetTile.currentPiece);
                 break;
-        }
-    }
-
-    public void ClearSelection()
-    {
-        selectedTile = null;
-        targetTile = null;
-        currentAction = PlayerAction.None;
-        Debug.Log("Sélection et action réinitialisées.");
-        if (tileOptions != null)
-        {
-            foreach (Tile tile in tileOptions)
-            {
-                tile.SetHighlightActive(false);
-            }
         }
     }
 
@@ -164,16 +168,76 @@ public class SelectionManager : MonoBehaviour
 
         targetTile.SetPiece(pieceToMove);
         selectedTile.SetPiece(null);
+
         pieceToMove.SetCurrentEnergy(pieceToMove.GetCurrentEnergy() - 1);
         TurnManager.Instance.SpendPM();
 
         UIButtons.Instance.SetButtonsVisibility(
             showMove: false, showAttack: false, showSpecialAttack: false, showCancel: false, showEndTurn: true
         );
+
         PieceInfoUI.instance.ShowInfo(null);
-        
+        ClearSelection();
+    }
+
+    public void AttackTarget()
+    {
+        if (selectedTile == null || selectedTile.currentPiece == null || targetTile == null)
+        {
+            Debug.LogWarning("[SelectionManager] AttackTarget échoué : prérequis non remplis.");
+            return;
+        }
+
+        if (tileOptions == null || !tileOptions.Contains(targetTile))
+        {
+            Debug.LogWarning("[SelectionManager] AttackTarget échoué : la case ciblée n'est pas valide.");
+            return;
+        }
+
+        BaseUnitScript attacker = selectedTile.currentPiece;
+        BaseUnitScript target = targetTile.currentPiece;
+
+        if (target == null)
+        {
+            Debug.LogWarning("[SelectionManager] AttackTarget échoué : aucune pièce sur la cible.");
+            return;
+        }
+
+        bool targetDied = attacker.Attack(target);
+
+        if (targetDied && attacker.GetAttackRange() == 1)
+        {
+            Debug.Log($"{attacker.name} avance sur la case de la cible vaincue.");
+            attacker.transform.position = targetTile.transform.position;
+            targetTile.SetPiece(attacker);
+            selectedTile.SetPiece(null);
+        }
+
+        attacker.SetCurrentEnergy(attacker.GetCurrentEnergy() - 1);
+        TurnManager.Instance.SpendPA();
+
+        UIButtons.Instance.SetButtonsVisibility(
+            showMove: false, showAttack: false, showSpecialAttack: false, showCancel: false, showEndTurn: true
+        );
+
+        PieceInfoUI.instance.ShowInfo(null);
         ClearSelection();
     }
 
 
+    public void ClearSelection()
+    {
+        selectedTile = null;
+        targetTile = null;
+        currentAction = PlayerAction.None;
+        Debug.Log("Sélection et action réinitialisées.");
+        if (tileOptions != null)
+        {
+            foreach (Tile tile in tileOptions)
+            {
+                tile.SetHighlightActive(false);
+            }
+            tileOptions = null;
+        }
+    }
 }

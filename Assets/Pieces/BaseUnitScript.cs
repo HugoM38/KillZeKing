@@ -80,11 +80,29 @@ public class BaseUnitScript : MonoBehaviour
     }
 
 
-    public virtual void ShowAttackOptions()
+    public List<Tile> ShowAttackOptions()
     {
-        Debug.Log($"{name} : Affiche les options d'attaque.");
-        // Logique de highlight à implémenter plus tard
+        Tile originTile = SelectionManager.Instance.selectedTile;
+        if (originTile == null)
+        {
+            Debug.LogWarning("[ShowAttackOptions] Aucun selectedTile défini dans SelectionManager.");
+            return new List<Tile>();
+        }
+
+        Tile[,] board = BoardGenerator.Instance.GetBoard();
+
+        List<Tile> tilesInRange = GetTilesInRange(originTile, attackRange, board);
+        List<Tile> enemyTiles = FilterTiles(tilesInRange, originTile, TileFilter.Enemy);
+
+        foreach (Tile tile in enemyTiles)
+        {
+            tile.SetHighlight(Color.red);
+        }
+
+        Debug.Log($"{name} a {enemyTiles.Count} cibles ennemies possibles à portée.");
+        return enemyTiles;
     }
+
 
     public virtual void ShowSpecialAttackOptions()
     {
@@ -92,11 +110,28 @@ public class BaseUnitScript : MonoBehaviour
         // Logique de highlight à implémenter plus tard
     }
 
-    public virtual void Attack(BaseUnitScript target)
+    public bool Attack(BaseUnitScript target)
     {
-        Debug.Log($"{name} attaque {target.name}.");
-        // Logique d'attaque à implémenter
+        if (target == null)
+        {
+            Debug.LogWarning($"{name} a tenté d'attaquer une cible invalide.");
+            return false;
+        }
+
+        Debug.Log($"{name} attaque {target.name} pour {attackDamage} dégâts.");
+        target.SetCurrentHealth(target.GetCurrentHealth() - attackDamage);
+        Debug.Log($"{target.name} a maintenant {target.GetCurrentHealth()} PV.");
+
+        if (target.GetCurrentHealth() <= 0)
+        {
+            Debug.Log($"{target.name} est vaincu !");
+            Destroy(target.gameObject);
+            return true;
+        }
+
+        return false;
     }
+
 
     public virtual void SpecialAttack(BaseUnitScript target)
     {
@@ -149,9 +184,9 @@ public class BaseUnitScript : MonoBehaviour
                     continue;
 
                 visited.Add(nextTile);
-
+                result.Add(nextTile);
                 if (nextTile.IsOccupied())
-                    continue; // obstacle
+                    continue;
 
                 queue.Enqueue((nextTile, dist + 1));
             }
@@ -163,7 +198,7 @@ public class BaseUnitScript : MonoBehaviour
     public List<Tile> FilterTiles(List<Tile> tiles, Tile originTile, TileFilter filter)
     {
         List<Tile> filteredTiles = new List<Tile>();
-
+        Debug.Log("FILTER_TILES");
         foreach (Tile tile in tiles)
         {
             switch (filter)
@@ -179,13 +214,21 @@ public class BaseUnitScript : MonoBehaviour
                     break;
 
                 case TileFilter.Ally:
-                    if (tile.IsOccupied() && tile.currentPiece.team == this.team)
-                        filteredTiles.Add(tile);
+                    if (tile.IsOccupied())
+                    {
+                        if (tile.currentPiece != null && tile.currentPiece.team == this.team)
+                            filteredTiles.Add(tile);
+                    }
                     break;
 
                 case TileFilter.Enemy:
-                    if (tile.IsOccupied() && tile.currentPiece.team != this.team)
-                        filteredTiles.Add(tile);
+                    Debug.Log("ENNEMI");
+                    if (tile.IsOccupied())
+                    {   
+                        Debug.Log($"ALED: {tile.currentPiece.team}");
+                        if (tile.currentPiece != null && tile.currentPiece.team != this.team)
+                            filteredTiles.Add(tile);
+                    }
                     break;
             }
         }
