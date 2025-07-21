@@ -1,2 +1,19 @@
 fileFormatVersion: 2
 guid: a6c82b1980b3647858b5ed5ceff9d014
+MonoImporter:
+  externalObjects: {}
+  serializedVersion: 2
+  defaultReferences:
+  - backgroundRenderer: {instanceID: 0}
+  - highlightRenderer: {instanceID: 0}
+  - currentPiece: {instanceID: 0}
+  - grassSprite: {fileID: -1347532211411968617, guid: cb7f4b0de958e46399a1580cee4bdadc, type: 3}
+  - waterSprite: {fileID: 6049605792901559095, guid: 336a533d996984147976f427be80c236, type: 3}
+  - rockSprite: {fileID: 3452003437791708593, guid: b8078b6b4c4ae403ba7fe4843b603b62, type: 3}
+  - sandSprite: {fileID: 8610565575992400378, guid: 7f593760cb5524b278a8139fdff9c2cd, type: 3}
+  - bridgeSprite: {fileID: 7265813586516431896, guid: 1f7604564b98244b790586511614bd92, type: 3}
+  executionOrder: 0
+  icon: {instanceID: 0}
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 

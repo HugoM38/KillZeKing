@@ -6,12 +6,21 @@ public class Tile : MonoBehaviour
     public SpriteRenderer backgroundRenderer;
     public SpriteRenderer highlightRenderer;
     public BaseUnitScript currentPiece;
+    public TileType tileType;
 
-    public void Init(Vector2Int coords, Color color)
+    public Sprite grassSprite;
+    public Sprite waterSprite;
+    public Sprite rockSprite;
+    public Sprite sandSprite;
+    public Sprite bridgeSprite;
+
+    public void Init(Vector2Int coords, TileType type)
     {
         coordinates = coords;
+        tileType = type;
+
         backgroundRenderer = GetComponent<SpriteRenderer>();
-        backgroundRenderer.color = color;
+        backgroundRenderer.sprite = GetSpriteForType(type);
         ClearHighlight();
     }
 
@@ -108,5 +117,18 @@ public class Tile : MonoBehaviour
         sourceTile.currentPiece = null;
 
         Debug.Log($"{movingPiece.name} déplacé de {sourceTile.coordinates} à {coordinates}");
+    }
+
+    private Sprite GetSpriteForType(TileType type)
+    {
+        return type switch
+        {
+            TileType.Grass => grassSprite,
+            TileType.Water => waterSprite,
+            TileType.Rock => rockSprite,
+            TileType.Sand => sandSprite,
+            TileType.Bridge => bridgeSprite,
+            _ => null
+        };
     }
 }
