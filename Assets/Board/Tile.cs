@@ -2,23 +2,23 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    public Vector2Int coordinates;
-    public SpriteRenderer backgroundRenderer;
+    [Header("Références")]
     public SpriteRenderer highlightRenderer;
     public BaseUnitScript currentPiece;
+    public Vector2Int coordinates;
+    public SpriteRenderer backgroundRenderer;
 
     public void Init(Vector2Int coords, Color color)
     {
         coordinates = coords;
-        backgroundRenderer = GetComponent<SpriteRenderer>();
+
+        if (backgroundRenderer == null)
+            backgroundRenderer = GetComponent<SpriteRenderer>();
+
         backgroundRenderer.color = color;
-        ClearHighlight();
+        SetHighlightActive(false);
     }
 
-    public bool IsOccupied()
-    {
-        return currentPiece != null;
-    }
 
     public void SetHighlight(Color color)
     {
@@ -29,84 +29,24 @@ public class Tile : MonoBehaviour
         }
     }
 
-    public void ClearHighlight()
+    public void SetHighlightActive(bool isActive)
     {
         if (highlightRenderer != null)
-        {
-            highlightRenderer.enabled = false;
-        }
+            highlightRenderer.enabled = isActive;
+    }
+
+    public void SetPiece(BaseUnitScript piece)
+    {
+        currentPiece = piece;
     }
 
     private void OnMouseDown()
     {
-        var sm = SelectionManager.Instance;
-        if (sm == null) return;
-
-        Tile[,] board = FindFirstObjectByType<BoardGenerator>().GetBoard();
-
-        if (IsOccupied() && sm.currentState == PlayerActionState.None)
-        {
-            sm.SelectPiece(currentPiece, board);
-            return;
-        }
-
-        if (sm.selectedPiece == null)
-            return;
-
-        if (sm.currentState == PlayerActionState.ActionSelected)
-        {
-            Color tileColor = highlightRenderer.color;
-
-            if (tileColor == Color.blue)
-            {
-                MoveSelectedPieceToThisTile(board);
-            }
-            else if (tileColor == Color.red)
-            {
-                if (currentPiece != null && currentPiece.team != sm.selectedPiece.team)
-                {
-                    sm.selectedTile = this;
-                    PieceInfoUI.instance.ShowTargetInfo(currentPiece);
-                    UIButtons.Instance.ShowAttackOptions();
-                }
-            }
-        }
+        SelectionManager.Instance.OnTileSelected(this);
     }
 
-    public void MoveSelectedPieceToThisTile(Tile[,] board)
+    public bool IsOccupied()
     {
-        var sm = SelectionManager.Instance;
-        var tm = TurnManager.Instance;
-
-        BaseUnitScript selectedPiece = sm.selectedPiece;
-        Vector2Int oldPos = selectedPiece.GetCurrentTilePosition();
-        Tile oldTile = board[oldPos.x, oldPos.y];
-
-        selectedPiece.transform.position = transform.position;
-        currentPiece = selectedPiece;
-        oldTile.currentPiece = null;
-
-        tm.SpendPM();
-        sm.ResetSelection();
-
-        var stats = tm.CurrentStats;
-        PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-    }
-
-    public void MovePieceFrom(Tile sourceTile)
-    {
-        if (sourceTile == null || sourceTile.currentPiece == null)
-        {
-            Debug.LogWarning("Tentative de déplacer une pièce depuis une tile vide.");
-            return;
-        }
-
-        BaseUnitScript movingPiece = sourceTile.currentPiece;
-
-        movingPiece.transform.position = transform.position;
-        currentPiece = movingPiece;
-        sourceTile.currentPiece = null;
-
-        Debug.Log($"{movingPiece.name} déplacé de {sourceTile.coordinates} à {coordinates}");
+        return currentPiece != null;
     }
 }

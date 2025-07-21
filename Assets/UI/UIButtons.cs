@@ -1,80 +1,89 @@
 using UnityEngine;
-using System.Collections.Generic;
 
 public class UIButtons : MonoBehaviour
 {
     public static UIButtons Instance;
 
-    public GameObject actionButton;
-    public GameObject cancelButton;
+    public GameObject moveButton;
     public GameObject attackButton;
     public GameObject specialAttackButton;
+    public GameObject cancelButton;
     public GameObject endTurnButton;
 
     private void Awake()
     {
-        Instance = this;
-        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
-        if (endTurnButton != null) endTurnButton.SetActive(true);
-        if (actionButton != null) actionButton.SetActive(false);
-        if (cancelButton != null) cancelButton.SetActive(false);
-        if (attackButton != null) attackButton.SetActive(false);
-        if (specialAttackButton != null) specialAttackButton.SetActive(false);
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+
+        SetButtonsVisibility(
+            showMove: false,
+            showAttack: false,
+            showSpecialAttack: false,
+            showCancel: false,
+            showEndTurn: true
+        );
     }
 
-    public void OnClickAction()
+    public void OnClickMove()
     {
-        SelectionManager.Instance.PrepareActionSelection();
-        RefreshButtons(showAction: false, showCancel: true, showAttackOptions: false);
-    }
-
-    public void OnClickCancel()
-    {
-        SelectionManager.Instance.ResetSelection();
-        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
-    }
-
-    public void ShowAttackOptions()
-    {
-        RefreshButtons(showAction: false, showCancel: true, showAttackOptions: true);
+        SelectionManager.Instance.SetAction(PlayerAction.Move);
     }
 
     public void OnClickAttack()
     {
-        SelectionManager.Instance.PerformAttack();
-        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+        SelectionManager.Instance.SetAction(PlayerAction.Attack);
     }
 
     public void OnClickSpecialAttack()
     {
-        SelectionManager.Instance.PerformSpecialAttack();
-        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+        SelectionManager.Instance.SetAction(PlayerAction.SpecialAttack);
+    }
+
+    public void OnClickCancel()
+    {
+        SelectionManager.Instance.ClearSelection();
+        SelectionManager.Instance.SetAction(PlayerAction.None);
+        SetButtonsVisibility(
+            showMove: false,
+            showAttack: false,
+            showSpecialAttack: false,
+            showCancel: false,
+            showEndTurn: true
+        );
     }
 
     public void OnClickEndTurn()
     {
-        SelectionManager.Instance.ResetSelection();
+        SelectionManager.Instance.ClearSelection();
         TurnManager.Instance.NextTurn();
+
         var tm = TurnManager.Instance;
         var stats = tm.CurrentStats;
         PieceInfoUI.instance.UpdateTurnDisplay(tm.currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
 
-        RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+        SetButtonsVisibility(
+            showMove: false,
+            showAttack: false,
+            showSpecialAttack: false,
+            showCancel: false,
+            showEndTurn: true
+        );
     }
 
-    public void RefreshButtons(bool showAction, bool showCancel, bool showAttackOptions)
+    public void SetButtonsVisibility(bool showMove, bool showAttack, bool showSpecialAttack, bool showCancel, bool showEndTurn)
     {
-        actionButton.SetActive(showAction);
-        cancelButton.SetActive(showCancel);
-        attackButton.SetActive(showAttackOptions);
-        if (SelectionManager.Instance.selectedPiece != null &&
-            SelectionManager.Instance.selectedPiece.currentEnergy == SelectionManager.Instance.selectedPiece.maxEnergy)
-        {
-            specialAttackButton.SetActive(showAttackOptions);
-        }
-        else
-        {
-            specialAttackButton.SetActive(false);
-        }
+        SetButtonActive(moveButton, showMove);
+        SetButtonActive(attackButton, showAttack);
+        SetButtonActive(specialAttackButton, showSpecialAttack);
+        SetButtonActive(cancelButton, showCancel);
+        SetButtonActive(endTurnButton, showEndTurn);
+    }
+
+    private void SetButtonActive(GameObject button, bool isActive)
+    {
+        if (button != null)
+            button.SetActive(isActive);
     }
 }

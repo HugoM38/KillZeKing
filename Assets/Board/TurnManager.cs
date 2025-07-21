@@ -27,6 +27,9 @@ public class TurnManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
+    private void Start(){
+        UpdateUI();
+    }
     public PlayerStats CurrentStats =>
         currentPlayer == BaseUnitScript.Team.Player ? playerStats : enemyStats;
 
@@ -67,7 +70,7 @@ public class TurnManager : MonoBehaviour
         foreach (var unit in allUnits)
         {
             if (unit.team == currentPlayer)
-                unit.RechargerEnergie();
+                unit.SetCurrentEnergy(unit.GetCurrentEnergy() + 1);
         }
     }
 
@@ -91,6 +94,12 @@ public class TurnManager : MonoBehaviour
         PlayerStats stats = CurrentStats;
         PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
 
-        UIButtons.Instance?.RefreshButtons(showAction: false, showCancel: false, showAttackOptions: false);
+        UIButtons.Instance?.SetButtonsVisibility(
+            showMove: false,
+            showAttack: false,
+            showSpecialAttack: false,
+            showCancel: false,
+            showEndTurn: true
+        );
     }
 }

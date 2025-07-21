@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class ChevalierScript : BaseUnitScript
-{
-    public override void SpecialAbility(BaseUnitScript target)
+{/*
+    public override void SpecialAttack(BaseUnitScript target)
     {
         if (target == null)
         {
@@ -22,6 +22,6 @@ public class ChevalierScript : BaseUnitScript
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         Debug.Log($"{name} récupère {amount} PV. Santé actuelle : {currentHealth}/{maxHealth}");
-    }
+    }*/
 
 }

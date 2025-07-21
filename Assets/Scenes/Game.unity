@@ -420,11 +420,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2b499a32240385c47946c9aa2475ee7d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedPiece: {fileID: 0}
   selectedTile: {fileID: 0}
-  validMoves: []
-  currentState: 0
-  targetSelected: 0
+  targetTile: {fileID: 0}
+  currentAction: 0
 --- !u!4 &228782135
 Transform:
   m_ObjectHideFlags: 0
@@ -495,10 +493,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3de497fdb184e3c408145203284c4147, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  actionButton: {fileID: 519068317}
-  cancelButton: {fileID: 355335207}
+  moveButton: {fileID: 519068317}
   attackButton: {fileID: 1771714301}
   specialAttackButton: {fileID: 722941061}
+  cancelButton: {fileID: 355335207}
   endTurnButton: {fileID: 1701703857}
 --- !u!114 &248529195
 MonoBehaviour:
@@ -923,7 +921,7 @@ GameObject:
   - component: {fileID: 519068320}
   - component: {fileID: 519068319}
   m_Layer: 5
-  m_Name: ActionButton
+  m_Name: MoveButton
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -995,7 +993,7 @@ MonoBehaviour:
       m_Calls:
       - m_Target: {fileID: 248529194}
         m_TargetAssemblyTypeName: UIButtons, Assembly-CSharp
-        m_MethodName: OnClickAction
+        m_MethodName: OnClickMove
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -2505,7 +2503,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: Action
+  m_text: 'Move
+
+'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}
   m_sharedMaterial: {fileID: 2180264, guid: 8f586378b4e144a9851e7b34d9b748ee, type: 2}

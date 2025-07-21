@@ -7,6 +7,7 @@ public class PieceInfoUI : MonoBehaviour
 
     public TextMeshProUGUI infoText;
     public TextMeshProUGUI turnText;
+    public TextMeshProUGUI targetInfoText;
 
     private void Awake()
     {
@@ -15,7 +16,7 @@ public class PieceInfoUI : MonoBehaviour
 
     private void Start()
     {
-        gameObject.SetActive(true); // 🔒 Forcer actif (même si désactivé dans la scène)
+        gameObject.SetActive(true);
         ShowNoSelection();
     }
 
@@ -29,9 +30,9 @@ public class PieceInfoUI : MonoBehaviour
 
         infoText.text =
             $"{piece.name} ({piece.team})\n" +
-            $"PV : {piece.currentHealth} / {piece.maxHealth}\n" +
-            $"ATK : {piece.attackDamage}\n" +
-            $"Énergie : {piece.currentEnergy} / {piece.maxEnergy}";
+            $"PV : {piece.GetCurrentHealth()} / {piece.GetMaxHealth()}\n" +
+            $"ATK : {piece.GetAttackDamage()}\n" +
+            $"Énergie : {piece.GetCurrentEnergy()} / {piece.GetMaxEnergy()}";
     }
 
     public void ShowNoSelection()
@@ -48,8 +49,6 @@ public class PieceInfoUI : MonoBehaviour
         }
     }
 
-    public TextMeshProUGUI targetInfoText;
-
     public void ShowTargetInfo(BaseUnitScript target)
     {
         if (target == null)
@@ -60,9 +59,8 @@ public class PieceInfoUI : MonoBehaviour
 
         targetInfoText.text =
             $"<b>Ennemi : {target.name}</b>\n" +
-            $"PV : {target.currentHealth} / {target.maxHealth}\n" +
-            $"ATK : {target.attackDamage}\n" +
-            $"Énergie : {target.currentEnergy} / {target.maxEnergy}";
+            $"PV : {target.GetCurrentHealth()} / {target.GetMaxHealth()}\n" +
+            $"ATK : {target.GetAttackDamage()}\n" +
+            $"Énergie : {target.GetCurrentEnergy()} / {target.GetMaxEnergy()}";
     }
-
 }

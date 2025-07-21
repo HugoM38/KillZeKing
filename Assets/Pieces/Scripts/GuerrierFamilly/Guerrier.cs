@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class GuerrierScript : BaseUnitScript
-{
-    public override void SpecialAbility(BaseUnitScript target)
+{/*
+    public override void SpecialAttack(BaseUnitScript target)
     {
         int baseDamage = attackDamage;
         int damage = Mathf.CeilToInt(baseDamage * 1.5f);
@@ -14,6 +14,6 @@ public class GuerrierScript : BaseUnitScript
         {
             target.UseEnergy(1);
         }
-    }
+    }*/
 
 }

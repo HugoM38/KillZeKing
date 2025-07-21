@@ -46,6 +46,17 @@ public class BoardGenerator : MonoBehaviour
     public BaseUnitScript barricadePrefab;
     public BaseUnitScript bouclierPrefab;
 
+    public static BoardGenerator Instance;
+
+    private void Awake()
+    {
+        if (Instance == null)
+            Instance = this;
+        else
+            Destroy(gameObject);
+    }
+
+
     void Start()
     {
         GenerateBoard();

@@ -2,8 +2,8 @@ using UnityEngine;
 using System.Collections.Generic;
 
 public class BerserkerScript : BaseUnitScript
-{
-    public override void SpecialAbility(BaseUnitScript target)
+{/*
+    public override void SpecialAttack(BaseUnitScript target)
     {
         if (target == null || target.team == this.team)
         {
@@ -30,5 +30,5 @@ public class BerserkerScript : BaseUnitScript
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
         Debug.Log($"{name} récupère {amount} PV. Santé actuelle : {currentHealth}/{maxHealth}");
-    }
+    }*/
 }

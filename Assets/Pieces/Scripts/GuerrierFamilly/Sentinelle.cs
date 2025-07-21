@@ -1,8 +1,8 @@
 using UnityEngine;
 
 public class SentinelleScript : BaseUnitScript
-{
-    public override void SpecialAbility(BaseUnitScript target)
+{   /*
+    public override void SpecialAttack(BaseUnitScript target)
     {
         if (target == null || target.team == this.team)
         {
@@ -27,5 +27,5 @@ public class SentinelleScript : BaseUnitScript
     private void Heal(int amount)
     {
         currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-    }
+    }*/
 }

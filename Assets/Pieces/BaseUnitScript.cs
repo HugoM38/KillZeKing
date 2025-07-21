@@ -1,20 +1,25 @@
 using UnityEngine;
 using System.Collections.Generic;
 
+
 public class BaseUnitScript : MonoBehaviour
 {
     public enum Team { Player, Enemy }
     public Team team;
 
-    public int maxHealth;
-    public int currentHealth;
-    public int attackDamage;
+    public enum TileFilter { Self, Empty, Ally, Enemy }
 
-    public int movementRange = 1;
-    public int attackRange = 1;
 
-    public int maxEnergy = 4;
-    public int currentEnergy = 1;
+    [Header("Stats de Base")]
+    [SerializeField] private int maxHealth;
+    [SerializeField] private int currentHealth;
+    [SerializeField] private int attackDamage;
+
+    [SerializeField] private int movementRange = 1;
+    [SerializeField] private int attackRange = 1;
+
+    [SerializeField] private int maxEnergy = 4;
+    [SerializeField] private int currentEnergy = 1;
 
     private void Start()
     {
@@ -29,24 +34,84 @@ public class BaseUnitScript : MonoBehaviour
         }
     }
 
-    public virtual List<Vector2Int> GetAvailableMoves(Vector2Int origin, Tile[,] board)
+    #region Getters / Setters
+
+    public int GetMaxHealth() => maxHealth;
+    public int GetCurrentHealth() => currentHealth;
+    public void SetCurrentHealth(int value) => currentHealth = Mathf.Clamp(value, 0, maxHealth);
+
+    public int GetAttackDamage() => attackDamage;
+    public void SetAttackDamage(int value) => attackDamage = value;
+
+    public int GetMovementRange() => movementRange;
+    public void SetMovementRange(int value) => movementRange = value;
+
+    public int GetAttackRange() => attackRange;
+    public void SetAttackRange(int value) => attackRange = value;
+
+    public int GetMaxEnergy() => maxEnergy;
+    public int GetCurrentEnergy() => currentEnergy;
+    public void SetCurrentEnergy(int value) => currentEnergy = Mathf.Clamp(value, 0, maxEnergy);
+
+    #endregion
+
+    #region Actions / Visualisations
+
+    public List<Tile> ShowMoveOptions()
     {
-        return GetTilesInRange(origin, movementRange, board, isAttack: false);
+        Tile originTile = SelectionManager.Instance.selectedTile;
+        if (originTile == null)
+        {
+            Debug.LogWarning("[ShowMoveOptions] Aucun selectedTile défini dans SelectionManager.");
+            return new List<Tile>();
+        }
+
+        Tile[,] board = BoardGenerator.Instance.GetBoard();
+
+        List<Tile> tilesInRange = GetTilesInRange(originTile, movementRange, board);
+        List<Tile> emptyTiles = FilterTiles(tilesInRange, originTile, TileFilter.Empty);
+        foreach (Tile tile in emptyTiles)
+        {
+            tile.SetHighlight(Color.blue);
+        }
+
+        Debug.Log($"{name} a {emptyTiles.Count} cases vides accessibles pour le déplacement.");
+        return emptyTiles;
     }
 
-    public virtual List<Vector2Int> GetAttackableTiles(Vector2Int origin, Tile[,] board)
+
+    public virtual void ShowAttackOptions()
     {
-        return GetTilesInRange(origin, attackRange, board, isAttack: true);
+        Debug.Log($"{name} : Affiche les options d'attaque.");
+        // Logique de highlight à implémenter plus tard
     }
 
-    private List<Vector2Int> GetTilesInRange(Vector2Int origin, int range, Tile[,] board, bool isAttack)
+    public virtual void ShowSpecialAttackOptions()
     {
-        List<Vector2Int> result = new List<Vector2Int>();
-        HashSet<Vector2Int> visited = new HashSet<Vector2Int>();
-        Queue<(Vector2Int pos, int dist)> queue = new Queue<(Vector2Int, int)>();
+        Debug.Log($"{name} : Affiche les options d'attaque spéciale.");
+        // Logique de highlight à implémenter plus tard
+    }
 
-        visited.Add(origin);
-        queue.Enqueue((origin, 0));
+    public virtual void Attack(BaseUnitScript target)
+    {
+        Debug.Log($"{name} attaque {target.name}.");
+        // Logique d'attaque à implémenter
+    }
+
+    public virtual void SpecialAttack(BaseUnitScript target)
+    {
+        Debug.Log($"{name} utilise une attaque spéciale sur {target.name}.");
+        // Logique d'attaque spéciale à implémenter
+    }
+
+    public List<Tile> GetTilesInRange(Tile originTile, int range, Tile[,] board)
+    {
+        List<Tile> result = new List<Tile>();
+        HashSet<Tile> visited = new HashSet<Tile>();
+        Queue<(Tile tile, int dist)> queue = new Queue<(Tile, int)>();
+
+        visited.Add(originTile);
+        queue.Enqueue((originTile, 0));
 
         Vector2Int[] directions = new Vector2Int[]
         {
@@ -61,93 +126,71 @@ public class BaseUnitScript : MonoBehaviour
 
         while (queue.Count > 0)
         {
-            var (current, dist) = queue.Dequeue();
+            var (currentTile, dist) = queue.Dequeue();
 
             if (dist != 0)
-                result.Add(current);
+                result.Add(currentTile);
 
             if (dist >= range)
                 continue;
 
+            Vector2Int currentPos = currentTile.coordinates;
+
             foreach (Vector2Int dir in directions)
             {
-                Vector2Int next = current + dir;
+                Vector2Int nextPos = currentPos + dir;
 
-                if (next.x < 0 || next.x >= boardWidth || next.y < 0 || next.y >= boardHeight)
+                if (nextPos.x < 0 || nextPos.x >= boardWidth || nextPos.y < 0 || nextPos.y >= boardHeight)
                     continue;
 
-                if (visited.Contains(next))
+                Tile nextTile = board[nextPos.x, nextPos.y];
+
+                if (visited.Contains(nextTile))
                     continue;
 
-                visited.Add(next);
-                Tile tile = board[next.x, next.y];
+                visited.Add(nextTile);
 
-                if (tile.IsOccupied())
-                {
-                    if (isAttack && tile.currentPiece.team != this.team)
-                    {
-                        result.Add(next);
-                    }
-                    continue;
-                }
+                if (nextTile.IsOccupied())
+                    continue; // obstacle
 
-                queue.Enqueue((next, dist + 1));
+                queue.Enqueue((nextTile, dist + 1));
             }
         }
 
         return result;
     }
 
-    public Vector2Int GetCurrentTilePosition()
+    public List<Tile> FilterTiles(List<Tile> tiles, Tile originTile, TileFilter filter)
     {
-        if (SelectionManager.Instance.selectedPiece == this)
+        List<Tile> filteredTiles = new List<Tile>();
+
+        foreach (Tile tile in tiles)
         {
-            if (SelectionManager.Instance.selectedTile != null)
-                return SelectionManager.Instance.selectedTile.coordinates;
-            else
-                Debug.LogWarning("[BaseUnitScript] Aucun tile sélectionné pour la pièce.");
+            switch (filter)
+            {
+                case TileFilter.Self:
+                    if (tile == originTile)
+                        filteredTiles.Add(tile);
+                    break;
+
+                case TileFilter.Empty:
+                    if (!tile.IsOccupied())
+                        filteredTiles.Add(tile);
+                    break;
+
+                case TileFilter.Ally:
+                    if (tile.IsOccupied() && tile.currentPiece.team == this.team)
+                        filteredTiles.Add(tile);
+                    break;
+
+                case TileFilter.Enemy:
+                    if (tile.IsOccupied() && tile.currentPiece.team != this.team)
+                        filteredTiles.Add(tile);
+                    break;
+            }
         }
 
-        Debug.LogWarning("[BaseUnitScript] GetCurrentTilePosition() appelée sur une pièce non sélectionnée.");
-        return new Vector2Int(-1, -1);
+        return filteredTiles;
     }
-
-
-    public bool TakeDamage(int amount)
-    {
-        currentHealth -= amount;
-        if (currentHealth <= 0)
-        {
-            Destroy(gameObject);
-            return true;
-        }
-        return false;
-    }
-
-    public void GainEnergy()
-    {
-        currentEnergy = Mathf.Min(currentEnergy + 1, maxEnergy);
-    }
-
-    public bool HasEnoughEnergy()
-    {
-        return currentEnergy > 0;
-    }
-
-    public void UseEnergy(int amount)
-    {
-        currentEnergy = Mathf.Max(0, currentEnergy - amount);
-    }
-
-    public void RechargerEnergie()
-    {
-        currentEnergy = Mathf.Min(maxEnergy, currentEnergy + 1);
-        Debug.Log($"[Énergie] {name} : {currentEnergy}/{maxEnergy}");
-    }
-
-    public virtual void SpecialAbility(BaseUnitScript target)
-    {
-        Debug.Log($"{name} utilise sa compétence spéciale sur {target.name} (par défaut, aucun effet).");
-    }
-
+    #endregion
 }
