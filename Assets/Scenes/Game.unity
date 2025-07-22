@@ -423,6 +423,7 @@ MonoBehaviour:
   selectedTile: {fileID: 0}
   targetTile: {fileID: 0}
   currentAction: 0
+  tileOptions: []
 --- !u!4 &228782135
 Transform:
   m_ObjectHideFlags: 0
@@ -2622,7 +2623,7 @@ MonoBehaviour:
   berserkerPrefab: {fileID: 789000645201176467, guid: 4acacfb00cbde714096177836fc81dfe, type: 3}
   sentinellePrefab: {fileID: 8554839351966884592, guid: 8778f074e90cd3c4f970c67a1d71a2ff, type: 3}
   magePrefab: {fileID: 2004356706988332546, guid: 5305ab743d9fc834785e1c3ec81f889b, type: 3}
-  sorcierPrefab: {fileID: 2004356706988332546, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
+  sorcierPrefab: {fileID: 6788082482467285821, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
   occultistePrefab: {fileID: 2004356706988332546, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
   enchanteurPrefab: {fileID: 2004356706988332546, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
   archerPrefab: {fileID: 2004356706988332546, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
@@ -2633,10 +2634,6 @@ MonoBehaviour:
   assassinPrefab: {fileID: 2004356706988332546, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
   espionPrefab: {fileID: 2004356706988332546, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}
   saboteurPrefab: {fileID: 2004356706988332546, guid: fbf7414239e5a2341bcf901591719b38, type: 3}
-  moinePrefab: {fileID: 2004356706988332546, guid: abc10748244af684da2064f49e7b2a13, type: 3}
-  moineGuerisseurPrefab: {fileID: 2004356706988332546, guid: 61b5b1d1d723e0b469bd0e46546b1ca4, type: 3}
-  maitreKiPrefab: {fileID: 2004356706988332546, guid: 840b6092bf9b80445ae13dcb51c9e265, type: 3}
-  exorcistePrefab: {fileID: 2004356706988332546, guid: 8476f00a5a68f0b419ac8867d0f8d116, type: 3}
   ingenieurPrefab: {fileID: 2004356706988332546, guid: 97791a20e49d54648ab194ac660c2e80, type: 3}
   tourellePrefab: {fileID: 2004356706988332546, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
   barricadePrefab: {fileID: 2004356706988332546, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
