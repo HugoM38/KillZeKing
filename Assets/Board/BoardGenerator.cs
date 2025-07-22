@@ -3,6 +3,7 @@ using System.Collections;
 
 public class BoardGenerator : MonoBehaviour
 {
+    public TextAsset mapJson;
     public GameObject tilePrefab;
     public int width = 16;
     public int height = 16;
@@ -70,24 +71,31 @@ public class BoardGenerator : MonoBehaviour
 
     void GenerateBoard()
     {
+        MapData mapData = JsonUtility.FromJson<MapData>(mapJson.text);
+        width = mapData.width;
+        height = mapData.height;
         tiles = new Tile[width, height];
 
         Vector2 boardCenterOffset = new Vector2((width - 1) * tileSpacing / 2f, (height - 1) * tileSpacing / 2f);
 
-        for (int x = 0; x < width; x++)
+        for (int y = 0; y < height; y++)
         {
-            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
             {
-                Vector2 position = new Vector2(x * tileSpacing, y * tileSpacing);
-                position -= boardCenterOffset;
+                int index = y * width + x;
+                string typeString = mapData.tiles[index];
+                if (!System.Enum.TryParse(typeString, out TileType type))
+                {
+                    Debug.LogError($"Type de tuile inconnu : {typeString} à ({x},{y})");
+                    type = TileType.Grass;
+                }
 
+                Vector2 position = new Vector2(x * tileSpacing, y * tileSpacing) - boardCenterOffset;
                 GameObject tileGO = Instantiate(tilePrefab, position, Quaternion.identity, transform);
                 tileGO.name = $"Tile_{x}_{y}";
 
                 Tile tile = tileGO.GetComponent<Tile>();
-                Color tileColor = (x + y) % 2 == 0 ? Color.white : Color.black;
-                tile.Init(new Vector2Int(x, y), tileColor);
-
+                tile.Init(new Vector2Int(x, y), type);
                 tiles[x, y] = tile;
             }
         }

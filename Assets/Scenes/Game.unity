@@ -2614,6 +2614,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a07cc8ea9e80a499eab47307eca85adb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  mapJson: {fileID: 4900000, guid: 766c5d724262f4b90a1adbfff9e73ad0, type: 3}
   tilePrefab: {fileID: 2243795782939247772, guid: 91899193edfb14140a8ea6b2d4c28d50, type: 3}
   width: 16
   height: 16

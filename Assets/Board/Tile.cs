@@ -7,15 +7,21 @@ public class Tile : MonoBehaviour
     public BaseUnitScript currentPiece;
     public Vector2Int coordinates;
     public SpriteRenderer backgroundRenderer;
+    public TileType tileType;
 
-    public void Init(Vector2Int coords, Color color)
+    public Sprite grassSprite;
+    public Sprite waterSprite;
+    public Sprite rockSprite;
+    public Sprite sandSprite;
+    public Sprite bridgeSprite;
+
+    public void Init(Vector2Int coords, TileType type)
     {
         coordinates = coords;
+        tileType = type;
 
-        if (backgroundRenderer == null)
-            backgroundRenderer = GetComponent<SpriteRenderer>();
-
-        backgroundRenderer.color = color;
+        backgroundRenderer = GetComponent<SpriteRenderer>();
+        backgroundRenderer.sprite = GetSpriteForType(type);
         SetHighlightActive(false);
     }
 
@@ -60,4 +66,16 @@ public class Tile : MonoBehaviour
         SelectionManager.Instance?.OnTileUnhovered(this);
     }
 
+    private Sprite GetSpriteForType(TileType type)
+    {
+        return type switch
+        {
+            TileType.Grass => grassSprite,
+            TileType.Water => waterSprite,
+            TileType.Rock => rockSprite,
+            TileType.Sand => sandSprite,
+            TileType.Bridge => bridgeSprite,
+            _ => null
+        };
+    }
 }
