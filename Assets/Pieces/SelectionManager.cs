@@ -16,7 +16,8 @@ public class SelectionManager : MonoBehaviour
     public Tile selectedTile;
     public Tile targetTile;
     public PlayerAction currentAction = PlayerAction.None;
-    public List<Tile> tileOptions;
+    public List<Tile> tileOptions; // Cases jaunes
+    private List<Tile> temporaryHighlights = new List<Tile>(); // Cases violettes
 
     private void Awake()
     {
@@ -54,7 +55,6 @@ public class SelectionManager : MonoBehaviour
             }
             else
             {
-                PieceInfoUI.instance.ShowTargetInfo(tile.currentPiece);
                 UIButtons.Instance.SetButtonsVisibility(
                     showMove: false,
                     showAttack: false,
@@ -88,33 +88,15 @@ public class SelectionManager : MonoBehaviour
                     break;
                 case PlayerAction.Move:
                     tileOptions = piece.ShowMoveOptions();
-                    UIButtons.Instance.SetButtonsVisibility(
-                        showMove: false,
-                        showAttack: false,
-                        showSpecialAttack: false,
-                        showCancel: true,
-                        showEndTurn: true
-                    );
+                    UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
                 case PlayerAction.Attack:
                     tileOptions = piece.ShowAttackOptions();
-                    UIButtons.Instance.SetButtonsVisibility(
-                        showMove: false,
-                        showAttack: false,
-                        showSpecialAttack: false,
-                        showCancel: true,
-                        showEndTurn: true
-                    );
+                    UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
                 case PlayerAction.SpecialAttack:
-                    piece.ShowSpecialAttackOptions();
-                    UIButtons.Instance.SetButtonsVisibility(
-                        showMove: false,
-                        showAttack: false,
-                        showSpecialAttack: false,
-                        showCancel: true,
-                        showEndTurn: true
-                    );
+                    tileOptions = piece.ShowSpecialAttackOptions();
+                    UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
             }
         }
@@ -144,7 +126,14 @@ public class SelectionManager : MonoBehaviour
                 AttackTarget();
                 break;
             case PlayerAction.SpecialAttack:
+                if (tileOptions == null || !tileOptions.Contains(targetTile))
+                    {
+                        Debug.LogWarning("[SelectionManager] SpecialAttack échoué : la case ciblée n'est pas valide.");
+                        return;
+                    }
                 piece.SpecialAttack(targetTile.currentPiece);
+                ClearTemporaryHighlights();
+                ClearSelection();
                 break;
         }
     }
@@ -169,13 +158,9 @@ public class SelectionManager : MonoBehaviour
         targetTile.SetPiece(pieceToMove);
         selectedTile.SetPiece(null);
 
-        pieceToMove.SetCurrentEnergy(pieceToMove.GetCurrentEnergy() - 1);
         TurnManager.Instance.SpendPM();
 
-        UIButtons.Instance.SetButtonsVisibility(
-            showMove: false, showAttack: false, showSpecialAttack: false, showCancel: false, showEndTurn: true
-        );
-
+        UIButtons.Instance.SetButtonsVisibility(false, false, false, false, true);
         PieceInfoUI.instance.ShowInfo(null);
         ClearSelection();
     }
@@ -216,14 +201,75 @@ public class SelectionManager : MonoBehaviour
         attacker.SetCurrentEnergy(attacker.GetCurrentEnergy() - 1);
         TurnManager.Instance.SpendPA();
 
-        UIButtons.Instance.SetButtonsVisibility(
-            showMove: false, showAttack: false, showSpecialAttack: false, showCancel: false, showEndTurn: true
-        );
-
+        UIButtons.Instance.SetButtonsVisibility(false, false, false, false, true);
         PieceInfoUI.instance.ShowInfo(null);
         ClearSelection();
     }
 
+    public void OnTileHovered(Tile tile)
+    {
+        if (currentAction == PlayerAction.SpecialAttack)
+        {
+            if (tileOptions != null && tileOptions.Contains(tile))
+            {
+                var piece = selectedTile.currentPiece;
+                if (piece != null)
+                {
+                    List<Tile> area = piece.GetSpecialAttackArea(tile);
+                    ShowEffectArea(area);
+                }
+            }
+            else
+            {
+                ShowAbilityTargets();
+            }
+        }
+        if (tile.currentPiece != null)
+            PieceInfoUI.instance.ShowTargetInfo(tile.currentPiece);
+        else
+            PieceInfoUI.instance.ShowTargetInfo(null);
+    }
+
+    public void OnTileUnhovered(Tile tile)
+    {
+        if (currentAction == PlayerAction.SpecialAttack)
+        {
+            ShowAbilityTargets();
+        }
+    }
+
+    private void ShowEffectArea(List<Tile> area)
+    {
+        ClearTemporaryHighlights();
+
+        foreach (Tile tile in area)
+        {
+            tile.SetHighlight(Color.magenta);
+            temporaryHighlights.Add(tile);
+        }
+    }
+
+    private void ShowAbilityTargets()
+    {
+        ClearTemporaryHighlights();
+
+        if (tileOptions != null)
+        {
+            foreach (Tile tile in tileOptions)
+            {
+                tile.SetHighlight(Color.yellow);
+            }
+        }
+    }
+
+    private void ClearTemporaryHighlights()
+    {
+        foreach (Tile tile in temporaryHighlights)
+        {
+            tile.SetHighlightActive(false);
+        }
+        temporaryHighlights.Clear();
+    }
 
     public void ClearSelection()
     {
@@ -231,6 +277,9 @@ public class SelectionManager : MonoBehaviour
         targetTile = null;
         currentAction = PlayerAction.None;
         Debug.Log("Sélection et action réinitialisées.");
+
+        ClearTemporaryHighlights();
+
         if (tileOptions != null)
         {
             foreach (Tile tile in tileOptions)

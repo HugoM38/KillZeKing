@@ -21,6 +21,9 @@ public class BaseUnitScript : MonoBehaviour
     [SerializeField] private int maxEnergy = 4;
     [SerializeField] private int currentEnergy = 1;
 
+    public GameObject statChangePopupPrefab;
+
+
     private void Start()
     {
         currentHealth = maxHealth;
@@ -37,17 +40,65 @@ public class BaseUnitScript : MonoBehaviour
     #region Getters / Setters
 
     public int GetMaxHealth() => maxHealth;
+    public void SetMaxHealth(int value)
+    {
+        int delta = value - maxHealth;
+        maxHealth = Mathf.Max(1, value);
+
+        if (delta != 0)
+        {
+            ShowStatChange($"{(delta > 0 ? "+" : "")}{delta} PV Max", Color.cyan);
+        }
+    }
+
     public int GetCurrentHealth() => currentHealth;
-    public void SetCurrentHealth(int value) => currentHealth = Mathf.Clamp(value, 0, maxHealth);
+    public void SetCurrentHealth(int value)
+    {
+        int delta = value - currentHealth;
+        currentHealth = Mathf.Clamp(value, 0, maxHealth);
+
+        if (delta != 0)
+        {
+            Color color = delta < 0 ? Color.red : Color.green;
+            ShowStatChange($"{(delta > 0 ? "+" : "")}{delta} PV", color);
+        }
+    }
 
     public int GetAttackDamage() => attackDamage;
-    public void SetAttackDamage(int value) => attackDamage = value;
+    public void SetAttackDamage(int value)
+    {
+        int delta = value - attackDamage;
+        attackDamage = Mathf.Max(0, value);
+
+        if (delta != 0)
+        {
+            ShowStatChange($"{(delta > 0 ? "+" : "")}{delta} ATK", Color.yellow);
+        }
+    }
 
     public int GetMovementRange() => movementRange;
-    public void SetMovementRange(int value) => movementRange = value;
+    public void SetMovementRange(int value)
+    {
+        int delta = value - movementRange;
+        movementRange = Mathf.Max(0, value);
+
+        if (delta != 0)
+        {
+            ShowStatChange($"{(delta > 0 ? "+" : "")}{delta} Portée Déplacement", Color.gray);
+        }
+    }
 
     public int GetAttackRange() => attackRange;
-    public void SetAttackRange(int value) => attackRange = value;
+    public void SetAttackRange(int value)
+    {
+        int delta = value - attackRange;
+        attackRange = Mathf.Max(0, value);
+
+        if (delta != 0)
+        {
+            ShowStatChange($"{(delta > 0 ? "+" : "")}{delta} Portée Attaque", Color.gray);
+        }
+    }
 
     public int GetMaxEnergy() => maxEnergy;
     public int GetCurrentEnergy() => currentEnergy;
@@ -104,10 +155,10 @@ public class BaseUnitScript : MonoBehaviour
     }
 
 
-    public virtual void ShowSpecialAttackOptions()
+    public virtual List<Tile> ShowSpecialAttackOptions()
     {
         Debug.Log($"{name} : Affiche les options d'attaque spéciale.");
-        // Logique de highlight à implémenter plus tard
+        return new List<Tile>();
     }
 
     public bool Attack(BaseUnitScript target)
@@ -132,11 +183,15 @@ public class BaseUnitScript : MonoBehaviour
         return false;
     }
 
+    public virtual List<Tile> GetSpecialAttackArea(Tile targetTile)
+    {
+        Debug.LogWarning($"{name} : GetSpecialAttackArea() n'est pas défini pour cette unité.");
+        return new List<Tile>();
+    }
 
     public virtual void SpecialAttack(BaseUnitScript target)
     {
         Debug.Log($"{name} utilise une attaque spéciale sur {target.name}.");
-        // Logique d'attaque spéciale à implémenter
     }
 
     public List<Tile> GetTilesInRange(Tile originTile, int range, Tile[,] board)
@@ -235,5 +290,22 @@ public class BaseUnitScript : MonoBehaviour
 
         return filteredTiles;
     }
+
+    private void ShowStatChange(string text, Color color)
+    {
+        if (statChangePopupPrefab == null)
+        {
+            Debug.LogWarning("statChangePopupPrefab non assigné sur " + name);
+            return;
+        }
+
+        GameObject popup = Instantiate(statChangePopupPrefab, transform.position + Vector3.up, Quaternion.identity);
+        StatChangePopup popupScript = popup.GetComponent<StatChangePopup>();
+        if (popupScript != null)
+        {
+            popupScript.Initialize(text, color);
+        }
+    }
+
     #endregion
 }

@@ -18,7 +18,7 @@ public class BoardGenerator : MonoBehaviour
 
     [Header("Mages")]
     public BaseUnitScript magePrefab;
-    public BaseUnitScript sorcierPrefab;
+    public Sorcier sorcierPrefab;
     public BaseUnitScript occultistePrefab;
     public BaseUnitScript enchanteurPrefab;
 
@@ -33,12 +33,6 @@ public class BoardGenerator : MonoBehaviour
     public BaseUnitScript assassinPrefab;
     public BaseUnitScript espionPrefab;
     public BaseUnitScript saboteurPrefab;
-
-    [Header("Moines")]
-    public BaseUnitScript moinePrefab;
-    public BaseUnitScript moineGuerisseurPrefab;
-    public BaseUnitScript maitreKiPrefab;
-    public BaseUnitScript exorcistePrefab;
 
     [Header("Ingénieurs")]
     public BaseUnitScript ingenieurPrefab;
@@ -174,17 +168,6 @@ public class BoardGenerator : MonoBehaviour
         SpawnUnit(assassinPrefab, new Vector2Int(13, enemyY), BaseUnitScript.Team.Enemy);
         SpawnUnit(espionPrefab, new Vector2Int(14, enemyY), BaseUnitScript.Team.Enemy);
         SpawnUnit(saboteurPrefab, new Vector2Int(15, enemyY), BaseUnitScript.Team.Enemy);
-
-        // Moines
-        SpawnUnit(moinePrefab, new Vector2Int(0, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(moineGuerisseurPrefab, new Vector2Int(1, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(maitreKiPrefab, new Vector2Int(2, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(exorcistePrefab, new Vector2Int(3, 0), BaseUnitScript.Team.Player);
-
-        SpawnUnit(moinePrefab, new Vector2Int(0, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(moineGuerisseurPrefab, new Vector2Int(1, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(maitreKiPrefab, new Vector2Int(2, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(exorcistePrefab, new Vector2Int(3, height - 1), BaseUnitScript.Team.Enemy);
 
         // Ingénieurs
         SpawnUnit(ingenieurPrefab, new Vector2Int(4, 0), BaseUnitScript.Team.Player);

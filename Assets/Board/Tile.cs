@@ -49,4 +49,15 @@ public class Tile : MonoBehaviour
     {
         return currentPiece != null;
     }
+    
+    private void OnMouseEnter()
+    {
+        SelectionManager.Instance?.OnTileHovered(this);
+    }
+
+    private void OnMouseExit()
+    {
+        SelectionManager.Instance?.OnTileUnhovered(this);
+    }
+
 }
