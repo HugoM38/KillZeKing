@@ -108,7 +108,7 @@ public class BaseUnitScript : MonoBehaviour
 
     #region Actions / Visualisations
 
-    public List<Tile> ShowMoveOptions()
+    public virtual List<Tile> ShowMoveOptions()
     {
         Tile originTile = SelectionManager.Instance.selectedTile;
         if (originTile == null)
@@ -131,7 +131,7 @@ public class BaseUnitScript : MonoBehaviour
     }
 
 
-    public List<Tile> ShowAttackOptions()
+    public virtual List<Tile> ShowAttackOptions()
     {
         Tile originTile = SelectionManager.Instance.selectedTile;
         if (originTile == null)
@@ -162,7 +162,7 @@ public class BaseUnitScript : MonoBehaviour
 
     }
 
-    public bool Attack(BaseUnitScript target)
+    public virtual bool Attack(BaseUnitScript target)
     {
         if (target == null)
         {

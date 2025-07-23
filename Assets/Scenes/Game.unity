@@ -2635,10 +2635,10 @@ MonoBehaviour:
   assassinPrefab: {fileID: 677687761527365046, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
   espionPrefab: {fileID: -7142681879738617518, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}
   saboteurPrefab: {fileID: -6821863515491715374, guid: fbf7414239e5a2341bcf901591719b38, type: 3}
-  ingenieurPrefab: {fileID: 2004356706988332546, guid: 97791a20e49d54648ab194ac660c2e80, type: 3}
-  tourellePrefab: {fileID: 2004356706988332546, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
-  barricadePrefab: {fileID: 2004356706988332546, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
-  bouclierPrefab: {fileID: 2004356706988332546, guid: cadbd7698f143b243b8a30f231c12501, type: 3}
+  ingenieurPrefab: {fileID: -705477543899753075, guid: 97791a20e49d54648ab194ac660c2e80, type: 3}
+  tourellePrefab: {fileID: 8510984063766556241, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
+  barricadePrefab: {fileID: 5629069220186657471, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
+  bouclierPrefab: {fileID: -575482631214880883, guid: cadbd7698f143b243b8a30f231c12501, type: 3}
 --- !u!4 &1846159932
 Transform:
   m_ObjectHideFlags: 0

@@ -36,10 +36,10 @@ public class BoardGenerator : MonoBehaviour
     public SaboteurScript saboteurPrefab;
 
     [Header("Ingénieurs")]
-    public BaseUnitScript ingenieurPrefab;
-    public BaseUnitScript tourellePrefab;
-    public BaseUnitScript barricadePrefab;
-    public BaseUnitScript bouclierPrefab;
+    public IngenieurScript ingenieurPrefab;
+    public TourelleScript tourellePrefab;
+    public BarricadeScript barricadePrefab;
+    public ShieldScript bouclierPrefab;
 
     public static BoardGenerator Instance;
 
