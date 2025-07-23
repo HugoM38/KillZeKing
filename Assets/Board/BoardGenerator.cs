@@ -30,10 +30,10 @@ public class BoardGenerator : MonoBehaviour
     public PiegeurScript piegeurPrefab;
 
     [Header("Voleurs")]
-    public BaseUnitScript voleurPrefab;
-    public BaseUnitScript assassinPrefab;
-    public BaseUnitScript espionPrefab;
-    public BaseUnitScript saboteurPrefab;
+    public VoleurScript voleurPrefab;
+    public AssassinScript assassinPrefab;
+    public EspionScript espionPrefab;
+    public SaboteurScript saboteurPrefab;
 
     [Header("Ingénieurs")]
     public BaseUnitScript ingenieurPrefab;

@@ -2631,10 +2631,10 @@ MonoBehaviour:
   sniperPrefab: {fileID: -4427334078657330550, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
   rangerPrefab: {fileID: -5682801628401891530, guid: 608303cd70080a0489ad50324934a93c, type: 3}
   piegeurPrefab: {fileID: 841895363265438504, guid: f9cc84ddebcced64b8b114a0a5cdd683, type: 3}
-  voleurPrefab: {fileID: 2004356706988332546, guid: fe6cc70144651054ca60ecfea6efbdcb, type: 3}
-  assassinPrefab: {fileID: 2004356706988332546, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
-  espionPrefab: {fileID: 2004356706988332546, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}
-  saboteurPrefab: {fileID: 2004356706988332546, guid: fbf7414239e5a2341bcf901591719b38, type: 3}
+  voleurPrefab: {fileID: 3899140907932254252, guid: fe6cc70144651054ca60ecfea6efbdcb, type: 3}
+  assassinPrefab: {fileID: 677687761527365046, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
+  espionPrefab: {fileID: -7142681879738617518, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}
+  saboteurPrefab: {fileID: -6821863515491715374, guid: fbf7414239e5a2341bcf901591719b38, type: 3}
   ingenieurPrefab: {fileID: 2004356706988332546, guid: 97791a20e49d54648ab194ac660c2e80, type: 3}
   tourellePrefab: {fileID: 2004356706988332546, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
   barricadePrefab: {fileID: 2004356706988332546, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
