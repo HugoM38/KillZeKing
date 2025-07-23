@@ -2623,10 +2623,10 @@ MonoBehaviour:
   chevalierPrefab: {fileID: -8399190187655513365, guid: 22f404fe507676a4ca91e50b5d893f2f, type: 3}
   berserkerPrefab: {fileID: 789000645201176467, guid: 4acacfb00cbde714096177836fc81dfe, type: 3}
   sentinellePrefab: {fileID: 8554839351966884592, guid: 8778f074e90cd3c4f970c67a1d71a2ff, type: 3}
-  magePrefab: {fileID: 2004356706988332546, guid: 5305ab743d9fc834785e1c3ec81f889b, type: 3}
+  magePrefab: {fileID: 5270059836645201782, guid: 5305ab743d9fc834785e1c3ec81f889b, type: 3}
   sorcierPrefab: {fileID: 6788082482467285821, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
-  occultistePrefab: {fileID: 2004356706988332546, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
-  enchanteurPrefab: {fileID: 2004356706988332546, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
+  occultistePrefab: {fileID: -8487941254936976811, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
+  enchanteurPrefab: {fileID: 7714855547679837419, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
   archerPrefab: {fileID: 2004356706988332546, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
   sniperPrefab: {fileID: 2004356706988332546, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
   rangerPrefab: {fileID: 2004356706988332546, guid: 608303cd70080a0489ad50324934a93c, type: 3}

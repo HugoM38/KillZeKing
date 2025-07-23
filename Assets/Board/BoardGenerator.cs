@@ -18,10 +18,10 @@ public class BoardGenerator : MonoBehaviour
     public BaseUnitScript sentinellePrefab;
 
     [Header("Mages")]
-    public BaseUnitScript magePrefab;
-    public Sorcier sorcierPrefab;
-    public BaseUnitScript occultistePrefab;
-    public BaseUnitScript enchanteurPrefab;
+    public MageScript magePrefab;
+    public SorcierScript sorcierPrefab;
+    public OccultisteScript occultistePrefab;
+    public EnchanteurScript enchanteurPrefab;
 
     [Header("Archers")]
     public BaseUnitScript archerPrefab;

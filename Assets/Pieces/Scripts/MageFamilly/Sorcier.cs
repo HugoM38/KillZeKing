@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Sorcier : BaseUnitScript
+public class SorcierScript : BaseUnitScript
 {
     public override List<Tile> ShowSpecialAttackOptions()
     {
