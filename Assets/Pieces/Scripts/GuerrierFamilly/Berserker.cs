@@ -1,34 +1,89 @@
-using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class BerserkerScript : BaseUnitScript
-{/*
+{
+    public override List<Tile> ShowSpecialAttackOptions()
+    {
+        Tile selfTile = SelectionManager.Instance.selectedTile;
+        if (selfTile == null)
+        {
+            Debug.LogWarning("[Berserker] Aucun selectedTile défini.");
+            return new List<Tile>();
+        }
+
+        selfTile.SetHighlight(Color.yellow);
+        return new List<Tile> { selfTile };
+    }
+
+    public override List<Tile> GetSpecialAttackArea(Tile targetTile)
+    {
+        List<Tile> area = new List<Tile>();
+
+        Tile originTile = SelectionManager.Instance.selectedTile;
+        if (originTile == null || targetTile != originTile)
+            return area;
+
+        Tile[,] board = BoardGenerator.Instance.GetBoard();
+
+        Vector2Int[] directions = new Vector2Int[]
+        {
+            Vector2Int.up, Vector2Int.down, Vector2Int.left, Vector2Int.right
+        };
+
+        foreach (var dir in directions)
+        {
+            Vector2Int adjacentPos = originTile.coordinates + dir;
+            if (adjacentPos.x >= 0 && adjacentPos.x < board.GetLength(0) &&
+                adjacentPos.y >= 0 && adjacentPos.y < board.GetLength(1))
+            {
+                Tile adjacentTile = board[adjacentPos.x, adjacentPos.y];
+                if (adjacentTile.IsOccupied() && adjacentTile.currentPiece.team != this.team)
+                {
+                    area.Add(adjacentTile);
+                }
+            }
+        }
+
+        return area;
+    }
+
     public override void SpecialAttack(BaseUnitScript target)
     {
-        if (target == null || target.team == this.team)
+        Tile originTile = SelectionManager.Instance.selectedTile;
+        if (originTile == null)
+            return;
+
+        List<Tile> affectedTiles = GetSpecialAttackArea(originTile);
+
+        if (affectedTiles.Count == 0)
         {
-            Debug.LogWarning("Cible invalide pour l'attaque spéciale du Berserker.");
+            Debug.Log("[Berserker] Aucune cible valide à proximité.");
             return;
         }
 
-        int previousHP = target.currentHealth;
+        int healed = 0;
 
-        target.TakeDamage(attackDamage);
-        Debug.Log($"{name} utilise son attaque spéciale et inflige {attackDamage} dégâts à {target.name}");
-
-        if (target.currentHealth <= 0 && previousHP > 0)
+        foreach (Tile tile in affectedTiles)
         {
-            TurnManager.Instance.CurrentStats.pa = TurnManager.Instance.CurrentStats.pa + 1;
-            Heal(1);
-            Debug.Log($"{name} a tué {target.name} : +1 PA pour le joueur et +1 PV !");
-            UseEnergy(maxEnergy * -1);
+            if (tile.IsOccupied() && tile.currentPiece.team != this.team)
+            {
+                int damage = originTile.currentPiece.GetAttackDamage();
+                tile.currentPiece.SetCurrentHealth(tile.currentPiece.GetCurrentHealth() - damage);
+                Debug.Log($"{name} inflige {damage} à {tile.currentPiece.name} et se soigne de 1 PV.");
 
+                if (tile.currentPiece.GetCurrentHealth() <= 0)
+                {
+                    Destroy(tile.currentPiece.gameObject);
+                    tile.SetPiece(null);
+                }
+
+                healed++;
+            }
         }
-    }
 
-    private void Heal(int amount)
-    {
-        currentHealth = Mathf.Min(currentHealth + amount, maxHealth);
-        Debug.Log($"{name} récupère {amount} PV. Santé actuelle : {currentHealth}/{maxHealth}");
-    }*/
+        SetCurrentHealth(GetCurrentHealth() + healed);
+        TurnManager.Instance.SpendPA();
+        SetCurrentEnergy(0);
+    }
 }
