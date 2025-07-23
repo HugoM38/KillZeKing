@@ -2627,6 +2627,7 @@ MonoBehaviour:
   sorcierPrefab: {fileID: 6788082482467285821, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
   occultistePrefab: {fileID: -8487941254936976811, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
   enchanteurPrefab: {fileID: 7714855547679837419, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
+  ombrePrefab: {fileID: 9109283420401204644, guid: 4147d65c1750da344a2e281a23c021dd, type: 3}
   archerPrefab: {fileID: -3814615352561264202, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
   sniperPrefab: {fileID: -4427334078657330550, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
   rangerPrefab: {fileID: -5682801628401891530, guid: 608303cd70080a0489ad50324934a93c, type: 3}

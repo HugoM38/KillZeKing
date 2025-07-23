@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class OccultisteScript : BaseUnitScript
 {
-    public GameObject guerrierPrefab; // À lier dans l'inspecteur Unity
+    public GameObject ombrePrefab;
 
     public override List<Tile> ShowSpecialAttackOptions()
     {
@@ -53,14 +53,14 @@ public class OccultisteScript : BaseUnitScript
             return;
         }
 
-        if (guerrierPrefab == null)
+        if (ombrePrefab == null)
         {
             Debug.LogError("[Occultiste] Prefab Guerrier non assigné !");
             return;
         }
 
         // Création de l’unité invoquée
-        GameObject newUnit = Instantiate(guerrierPrefab, summonTile.transform.position, Quaternion.identity);
+        GameObject newUnit = Instantiate(ombrePrefab, summonTile.transform.position, Quaternion.identity);
         BaseUnitScript unitScript = newUnit.GetComponent<BaseUnitScript>();
 
         if (unitScript != null)
@@ -68,9 +68,6 @@ public class OccultisteScript : BaseUnitScript
             unitScript.team = this.team;
             summonTile.SetPiece(unitScript);
         }
-
-        Debug.Log($"{name} a invoqué un Guerrier en {summonTile.coordinates}"); //TODO Changer par une unité basique
-
         TurnManager.Instance.SpendPA();
         SetCurrentEnergy(0);
     }

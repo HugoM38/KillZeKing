@@ -22,6 +22,7 @@ public class BoardGenerator : MonoBehaviour
     public SorcierScript sorcierPrefab;
     public OccultisteScript occultistePrefab;
     public EnchanteurScript enchanteurPrefab;
+    public OmbreScript ombrePrefab;
 
     [Header("Archers")]
     public ArcherScript archerPrefab;
