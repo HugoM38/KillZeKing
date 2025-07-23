@@ -24,10 +24,10 @@ public class BoardGenerator : MonoBehaviour
     public EnchanteurScript enchanteurPrefab;
 
     [Header("Archers")]
-    public BaseUnitScript archerPrefab;
-    public BaseUnitScript sniperPrefab;
-    public BaseUnitScript rangerPrefab;
-    public BaseUnitScript piegeurPrefab;
+    public ArcherScript archerPrefab;
+    public SniperScript sniperPrefab;
+    public RangerScript rangerPrefab;
+    public PiegeurScript piegeurPrefab;
 
     [Header("Voleurs")]
     public BaseUnitScript voleurPrefab;

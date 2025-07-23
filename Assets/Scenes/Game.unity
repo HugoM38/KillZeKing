@@ -2627,10 +2627,10 @@ MonoBehaviour:
   sorcierPrefab: {fileID: 6788082482467285821, guid: 6305e6a926e64d14883d0120c94a9792, type: 3}
   occultistePrefab: {fileID: -8487941254936976811, guid: 46628614b292c8f4d92ce1567529b9d3, type: 3}
   enchanteurPrefab: {fileID: 7714855547679837419, guid: 083fe139aac50ac46bbd6cb3f6fae969, type: 3}
-  archerPrefab: {fileID: 2004356706988332546, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
-  sniperPrefab: {fileID: 2004356706988332546, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
-  rangerPrefab: {fileID: 2004356706988332546, guid: 608303cd70080a0489ad50324934a93c, type: 3}
-  piegeurPrefab: {fileID: 2004356706988332546, guid: f9cc84ddebcced64b8b114a0a5cdd683, type: 3}
+  archerPrefab: {fileID: -3814615352561264202, guid: 16c2ed2c1b315fe4f87dbfe670c1780d, type: 3}
+  sniperPrefab: {fileID: -4427334078657330550, guid: 5b7fe3a2246db2648bef8041bd0e5dc1, type: 3}
+  rangerPrefab: {fileID: -5682801628401891530, guid: 608303cd70080a0489ad50324934a93c, type: 3}
+  piegeurPrefab: {fileID: 841895363265438504, guid: f9cc84ddebcced64b8b114a0a5cdd683, type: 3}
   voleurPrefab: {fileID: 2004356706988332546, guid: fe6cc70144651054ca60ecfea6efbdcb, type: 3}
   assassinPrefab: {fileID: 2004356706988332546, guid: 8050e7508c8b82641896c5186b03d6a3, type: 3}
   espionPrefab: {fileID: 2004356706988332546, guid: f81d7c10a7685e041aca3ba5a49b1aa9, type: 3}

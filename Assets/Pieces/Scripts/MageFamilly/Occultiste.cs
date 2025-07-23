@@ -69,7 +69,7 @@ public class OccultisteScript : BaseUnitScript
             summonTile.SetPiece(unitScript);
         }
 
-        Debug.Log($"{name} a invoqué un Guerrier en {summonTile.coordinates}");
+        Debug.Log($"{name} a invoqué un Guerrier en {summonTile.coordinates}"); //TODO Changer par une unité basique
 
         TurnManager.Instance.SpendPA();
         SetCurrentEnergy(0);
