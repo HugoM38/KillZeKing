@@ -13,7 +13,6 @@ public class SpellManager : MonoBehaviour
         else Destroy(gameObject);
     }
 
-    /// <summary> Appelé par la carte au clic </summary>
     public void ActivateSpell(string spellName, int value)
     {
         pendingSpellName  = spellName;
@@ -21,7 +20,6 @@ public class SpellManager : MonoBehaviour
         Debug.Log($"Sort activé : {spellName} ({value})");
     }
 
-    /// <summary> Réinitialise l’état </summary>
     public void ClearSpell()
     {
         pendingSpellName  = "";

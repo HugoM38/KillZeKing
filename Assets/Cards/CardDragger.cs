@@ -3,10 +3,12 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class CardDragger : MonoBehaviour
 {
-    private Vector3       offset;
-    private bool          isDragging = false;
+    private Vector3    offset;
+    private bool       isDragging = false;
     private SpriteRenderer sr;
-    private Collider2D    myCollider;
+    private Collider2D myCollider;
+
+    private Tile       dragHoverTile;
 
     [HideInInspector] public FullDeckGenerator deckGen;
 
@@ -20,13 +22,43 @@ public class CardDragger : MonoBehaviour
     {
         isDragging      = true;
         offset          = transform.position - GetMouseWorldPos();
-        sr.sortingOrder = 100;  // Bring card to front
+        sr.sortingOrder = 100;
     }
 
     void Update()
     {
-        if (isDragging)
-            transform.position = GetMouseWorldPos() + offset;
+        if (!isDragging) return;
+
+        transform.position = GetMouseWorldPos() + offset;
+
+        Vector3 wp3 = GetMouseWorldPos();
+        Vector2 wp2 = new Vector2(wp3.x, wp3.y);
+
+        myCollider.enabled = false;
+        Collider2D[] hits  = Physics2D.OverlapPointAll(wp2);
+        myCollider.enabled = true;
+
+        Tile newTile = null;
+        foreach (var c in hits)
+        {
+            var t = c.GetComponent<Tile>();
+            if (t != null)
+            {
+                newTile = t;
+                break;
+            }
+        }
+
+        if (newTile != dragHoverTile)
+        {
+            if (dragHoverTile != null)
+                SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
+
+            dragHoverTile = newTile;
+
+            if (dragHoverTile != null)
+                SelectionManager.Instance.OnTileHovered(dragHoverTile);
+        }
     }
 
     void OnMouseUp()
@@ -34,53 +66,59 @@ public class CardDragger : MonoBehaviour
         isDragging      = false;
         sr.sortingOrder = 0;
 
-        // **Désactive le collider de la carte** pour que le raycast n'accroche pas dessus
+        if (dragHoverTile != null)
+        {
+            SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
+            dragHoverTile = null;
+        }
+
+        Vector3 wp3  = GetMouseWorldPos();
+        Vector2 wp2  = new Vector2(wp3.x, wp3.y);
+
         myCollider.enabled = false;
-
-        // 1) Raycast sous le curseur
-        Vector3 worldPos  = GetMouseWorldPos();
-        Vector2 worldPos2 = new Vector2(worldPos.x, worldPos.y);
-        RaycastHit2D hit  = Physics2D.Raycast(worldPos2, Vector2.zero);
-
-        // **Réactive tout de suite** le collider
+        Collider2D[] hits  = Physics2D.OverlapPointAll(wp2);
         myCollider.enabled = true;
 
-        if (hit.collider != null)
+        Tile dropTile = null;
+        foreach (var c in hits)
         {
-            Tile dropTile = hit.collider.GetComponent<Tile>();
-            if (dropTile != null && dropTile.currentPiece != null)
+            var t = c.GetComponent<Tile>();
+            if (t != null)
             {
-                // 2) Applique l'effet
-                BaseUnitScript unit = dropTile.currentPiece;
-                Card card           = GetComponent<Card>();
-
-                Debug.Log($"[CardDragger] Applique {card.cardName} sur {unit.name}");
-                switch (card.cardName)
-                {
-                    case "Boule de Feu":
-                        unit.TakeDamage(card.cardValue);
-                        break;
-                    case "Healing Light":
-                        unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
-                        break;
-                    case "Defense Shield":
-                        unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
-                        break;
-                    default:
-                        Debug.LogWarning($"Sort inconnu : {card.cardName}");
-                        break;
-                }
-
-                // 3) Retire la carte de la main
-                int idx = deckGen.cardGOs.IndexOf(gameObject);
-                if (idx >= 0) deckGen.cardGOs.RemoveAt(idx);
-                Destroy(gameObject);
-                deckGen.RepositionAll();
-                return;
+                dropTile = t;
+                break;
             }
         }
 
-        // 4) Sinon, swap/snap dans la main
+        if (dropTile != null && dropTile.currentPiece != null)
+        {
+            var unit = dropTile.currentPiece;
+            var card = GetComponent<Card>();
+            Debug.Log($"[CardDragger] Applique {card.cardName} sur {unit.name}");
+
+            switch (card.cardName)
+            {
+                case "Boule de Feu":
+                    unit.TakeDamage(card.cardValue);
+                    break;
+                case "Soin":
+                    unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
+                    break;
+                case "Defense Shield":
+                    unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
+                    break;
+                default:
+                    Debug.LogWarning($"Sort inconnu : {card.cardName}");
+                    break;
+            }
+
+            int idx = deckGen.cardGOs.IndexOf(gameObject);
+            if (idx >= 0) deckGen.cardGOs.RemoveAt(idx);
+            Destroy(gameObject);
+            deckGen.RepositionAll();
+            return;
+        }
+
         int originalIndex = deckGen.cardGOs.IndexOf(gameObject);
         float bestDist    = float.MaxValue;
         int   bestIdx     = originalIndex;
@@ -88,10 +126,10 @@ public class CardDragger : MonoBehaviour
 
         for (int i = 0; i < deckGen.slotPositions.Count; i++)
         {
-            Vector3 slotPos = deckGen.slotPositions[i];
+            Vector3 slot = deckGen.slotPositions[i];
             float d = Vector2.Distance(
                 new Vector2(localPos.x, localPos.y),
-                new Vector2(slotPos.x, slotPos.y)
+                new Vector2(slot.x, slot.y)
             );
             if (d < bestDist)
             {

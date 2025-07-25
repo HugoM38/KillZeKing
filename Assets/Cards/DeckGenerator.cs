@@ -27,21 +27,17 @@ public class FullDeckGenerator : MonoBehaviour
     [Tooltip("Décalage vertical local")]
     public float      yOffset     = -4f;
 
-    // Représentation interne d'une carte
     private class CardData { public Sprite front; public string name; public int value; }
     private List<CardData> allCards    = new List<CardData>();
     private List<CardData> currentHand = new List<CardData>();
 
-    // Pour l'affichage
     [HideInInspector] public List<GameObject> cardGOs       = new List<GameObject>();
     [HideInInspector] public List<Vector3>    slotPositions = new List<Vector3>();
 
-    // Pour mise à jour runtime
     private float prevScale, prevSpacing, prevYOffset;
 
     void Start()
     {
-        // Vérification
         if (cardFrontSprites.Length != cardNames.Length || cardNames.Length != cardValues.Length)
             Debug.LogError("Le tableau cardFrontSprites, cardNames et cardValues doivent être de même longueur !");
 
@@ -69,7 +65,6 @@ public class FullDeckGenerator : MonoBehaviour
     {
         allCards.Clear();
 
-        // on utilise un pool d'indices pour éviter répétitions jusqu'à épuisement
         List<int> pool = new List<int>();
         for (int i = 0; i < cardFrontSprites.Length; i++)
             pool.Add(i);
@@ -110,18 +105,15 @@ public class FullDeckGenerator : MonoBehaviour
 
     public void DisplayHand()
     {
-        // Suppression des anciennes instances
         foreach (Transform c in transform)
             Destroy(c.gameObject);
         cardGOs.Clear();
         slotPositions.Clear();
 
-        // Calcul des positions
         float startX = -(cardSpacing * (currentHand.Count - 1) / 2f);
         for (int i = 0; i < currentHand.Count; i++)
             slotPositions.Add(new Vector3(startX + i * cardSpacing, yOffset, 0f));
 
-        // Instanciation & configuration
         for (int i = 0; i < currentHand.Count; i++)
         {
             var data = currentHand[i];
@@ -138,7 +130,6 @@ public class FullDeckGenerator : MonoBehaviour
             card.cardValue   = data.value;
             card.infoMessage = $"{data.name} : {data.value}";
 
-            // drag & collider
             var drag = go.GetComponent<CardDragger>() ?? go.AddComponent<CardDragger>();
             drag.deckGen = this;
             if (go.GetComponent<Collider2D>() == null)
@@ -148,12 +139,10 @@ public class FullDeckGenerator : MonoBehaviour
 
     public void SwapCards(int idxA, int idxB)
     {
-        // Échange des données
         var tmpData       = currentHand[idxA];
         currentHand[idxA] = currentHand[idxB];
         currentHand[idxB] = tmpData;
 
-        // Échange des GameObjects
         var tmpGO         = cardGOs[idxA];
         cardGOs[idxA]     = cardGOs[idxB];
         cardGOs[idxB]     = tmpGO;
