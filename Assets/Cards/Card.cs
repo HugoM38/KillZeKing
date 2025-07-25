@@ -1,36 +1,24 @@
+// Assets/Scripts/Card.cs
 using UnityEngine;
-using TMPro;
 
 public class Card : MonoBehaviour
 {
     public Sprite frontSprite;
     public Sprite backSprite;
     public string cardName;
-    public int cardValue;
-    public string infoMessage = "Je suis une carte...";
-
+    public int    cardValue;
+    public string infoMessage;
     private SpriteRenderer spriteRenderer;
     private InfoCardDisplay infoDisplay;
+    
 
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
-
-        // Recherche récursive de InfoPanel dans les enfants
-        Transform panelTransform = transform.FindDeepChild("InfoPanel");
-
-        if (panelTransform != null)
-        {
-            infoDisplay = panelTransform.GetComponent<InfoCardDisplay>();
-            if (infoDisplay == null)
-            {
-                Debug.LogWarning("Le composant InfoCardDisplay est manquant sur InfoPanel !");
-            }
-        }
-        else
-        {
-            Debug.LogWarning("InfoPanel introuvable dans la hiérarchie de la carte !");
-        }
+        // Récupère ton panel InfoCardDisplay dans les enfants
+        var panel = transform.FindDeepChild("InfoPanel");
+        if (panel != null)
+            infoDisplay = panel.GetComponent<InfoCardDisplay>();
     }
 
     void Start()
@@ -38,20 +26,30 @@ public class Card : MonoBehaviour
         ShowFront();
     }
 
-    public void ShowFront() => spriteRenderer.sprite = frontSprite;
+    void OnMouseEnter()
+    {
+        if (infoDisplay != null)
+            infoDisplay.Show(infoMessage);
+    }
 
-    public void ShowBack() => spriteRenderer.sprite = backSprite;
+    void OnMouseExit()
+    {
+        if (infoDisplay != null)
+            infoDisplay.Hide();
+    }
+
+
 
     void OnMouseDown()
     {
-        Debug.Log("Carte cliquée : " + cardName); // Affiche le nom de la carte cliquée dans la console
-        if (infoDisplay != null)
+        if (SpellManager.Instance != null 
+            && SpellManager.Instance.pendingSpellValue == 0) // aucun sort en attente
         {
-            // infoDisplay.Show(cardName); // Affiche le nom de la carte dans l'InfoCardDisplay
-        }
-        else
-        {
-            Debug.LogWarning("infoDisplay est null, impossible d'afficher le message.");
+            SpellManager.Instance.ActivateSpell(cardName, cardValue);
+            Destroy(gameObject);
         }
     }
+
+    public void ShowFront() => spriteRenderer.sprite = frontSprite;
+    public void ShowBack()  => spriteRenderer.sprite = backSprite;
 }

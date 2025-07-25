@@ -1,85 +1,179 @@
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class FullDeckGenerator : MonoBehaviour
 {
-    public GameObject cardPrefab;
-    public Sprite[] cardFrontSprites;   // 52 sprites dans l’ordre
-    public Sprite cardBackSprite;
+    [Header("Types de cartes (parallel arrays)")]
+    [Tooltip("Sprites de face")]
+    public Sprite[] cardFrontSprites;
+    [Tooltip("Noms affichés pour chaque sprite")]
+    public string[] cardNames;
+    [Tooltip("Valeurs (dégât, soin, bouclier…) pour chaque sprite")]
+    public int[]    cardValues;
 
-    private List<CardData> allCards = new List<CardData>();
+    [Header("Paramètres du deck")]
+    [Tooltip("Taille totale du deck (mélange avec remise)")]
+    public int      deckSize = 20;
+    [Tooltip("Nombre de cartes à tirer en main")]
+    public int      handSize = 3;
+
+    [Header("Visuels & Layout")]
+    public Sprite   cardBackSprite;
+    public GameObject cardPrefab;
+    [Tooltip("Échelle relative de chaque carte (1 = taille du prefab)")]
+    public float      cardScale   = 0.2f;
+    [Tooltip("Espacement horizontal entre cartes")]
+    public float      cardSpacing = 2.5f;
+    [Tooltip("Décalage vertical local")]
+    public float      yOffset     = -4f;
+
+    // Représentation interne d'une carte
+    private class CardData { public Sprite front; public string name; public int value; }
+    private List<CardData> allCards    = new List<CardData>();
     private List<CardData> currentHand = new List<CardData>();
 
-    private class CardData
-    {
-        public string name;
-        public int value;
-        public Sprite front;
-    }
+    // Pour l'affichage
+    [HideInInspector] public List<GameObject> cardGOs       = new List<GameObject>();
+    [HideInInspector] public List<Vector3>    slotPositions = new List<Vector3>();
+
+    // Pour mise à jour runtime
+    private float prevScale, prevSpacing, prevYOffset;
 
     void Start()
     {
-        GenerateAllCards();
-        SelectRandomHand();
-        DisplayHand();  // <-- appel direct au lancement
+        // Vérification
+        if (cardFrontSprites.Length != cardNames.Length || cardNames.Length != cardValues.Length)
+            Debug.LogError("Le tableau cardFrontSprites, cardNames et cardValues doivent être de même longueur !");
+
+        prevScale   = cardScale;
+        prevSpacing = cardSpacing;
+        prevYOffset = yOffset;
+
+        GenerateDeck();
+        DrawHand();
+        DisplayHand();
     }
 
-    void GenerateAllCards()
+    void Update()
     {
-        string[] suits  = { "Trèfle", "Carreau", "Cœur", "Pique" };
-        string[] values = { "As", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Valet", "Dame", "Roi" };
-        int index = 0;
-
-        foreach (string suit in suits)
+        if (cardScale != prevScale || cardSpacing != prevSpacing || yOffset != prevYOffset)
         {
-            foreach (string value in values)
-            {
-                var card = new CardData
-                {
-                    name  = $"{value} de {suit}",
-                    value = (value == "As") ? 11 : System.Array.IndexOf(values, value) + 1,
-                    front = cardFrontSprites[index]
-                };
-                allCards.Add(card);
-                index++;
-            }
+            prevScale   = cardScale;
+            prevSpacing = cardSpacing;
+            prevYOffset = yOffset;
+            RepositionAll();
         }
     }
 
-    void SelectRandomHand()
+    void GenerateDeck()
+    {
+        allCards.Clear();
+
+        // on utilise un pool d'indices pour éviter répétitions jusqu'à épuisement
+        List<int> pool = new List<int>();
+        for (int i = 0; i < cardFrontSprites.Length; i++)
+            pool.Add(i);
+
+        for (int i = 0; i < deckSize; i++)
+        {
+            if (pool.Count == 0)
+            {
+                pool.Clear();
+                for (int j = 0; j < cardFrontSprites.Length; j++)
+                    pool.Add(j);
+            }
+
+            int pick = Random.Range(0, pool.Count);
+            int idx  = pool[pick];
+            pool.RemoveAt(pick);
+
+            allCards.Add(new CardData {
+                front = cardFrontSprites[idx],
+                name  = cardNames[idx],
+                value = cardValues[idx]
+            });
+        }
+    }
+
+    void DrawHand()
     {
         currentHand.Clear();
-        var tempDeck = new List<CardData>(allCards);
-
-        for (int i = 0; i < 5; i++)
+        var temp = new List<CardData>(allCards);
+        int draw  = Mathf.Min(handSize, temp.Count);
+        for (int i = 0; i < draw; i++)
         {
-            int rand = Random.Range(0, tempDeck.Count);
-            currentHand.Add(tempDeck[rand]);
-            tempDeck.RemoveAt(rand);
+            int r = Random.Range(0, temp.Count);
+            currentHand.Add(temp[r]);
+            temp.RemoveAt(r);
         }
     }
 
-    void DisplayHand()
+    public void DisplayHand()
     {
-        // Supprime d'abord d'éventuelles vieilles instances
-        foreach (Transform child in transform)
-            Destroy(child.gameObject);
+        // Suppression des anciennes instances
+        foreach (Transform c in transform)
+            Destroy(c.gameObject);
+        cardGOs.Clear();
+        slotPositions.Clear();
 
-        float spacing = 1.5f;
-        float startX  = -(spacing * 2);
+        // Calcul des positions
+        float startX = -(cardSpacing * (currentHand.Count - 1) / 2f);
+        for (int i = 0; i < currentHand.Count; i++)
+            slotPositions.Add(new Vector3(startX + i * cardSpacing, yOffset, 0f));
 
+        // Instanciation & configuration
         for (int i = 0; i < currentHand.Count; i++)
         {
-            GameObject go = Instantiate(cardPrefab, transform);
-            go.transform.localPosition = new Vector3(startX + i * spacing, 0f, 0f);
+            var data = currentHand[i];
+            var go   = Instantiate(cardPrefab, transform);
+            cardGOs.Add(go);
+
+            go.transform.localPosition = slotPositions[i];
+            go.transform.localScale    = Vector3.one * cardScale;
 
             var card = go.GetComponent<Card>();
-            card.frontSprite  = currentHand[i].front;
-            card.backSprite   = cardBackSprite;
-            card.cardName     = currentHand[i].name;
-            card.cardValue    = currentHand[i].value;
-            card.infoMessage  = $"Texte perso carte {i+1}";
+            card.frontSprite = data.front;
+            card.backSprite  = cardBackSprite;
+            card.cardName    = data.name;
+            card.cardValue   = data.value;
+            card.infoMessage = $"{data.name} : {data.value}";
+
+            // drag & collider
+            var drag = go.GetComponent<CardDragger>() ?? go.AddComponent<CardDragger>();
+            drag.deckGen = this;
+            if (go.GetComponent<Collider2D>() == null)
+                go.AddComponent<BoxCollider2D>();
+        }
+    }
+
+    public void SwapCards(int idxA, int idxB)
+    {
+        // Échange des données
+        var tmpData       = currentHand[idxA];
+        currentHand[idxA] = currentHand[idxB];
+        currentHand[idxB] = tmpData;
+
+        // Échange des GameObjects
+        var tmpGO         = cardGOs[idxA];
+        cardGOs[idxA]     = cardGOs[idxB];
+        cardGOs[idxB]     = tmpGO;
+
+        RepositionAll();
+    }
+
+    public void RepositionAll()
+    {
+        slotPositions.Clear();
+        int count = cardGOs.Count;
+        float startX = -(cardSpacing * (count - 1) / 2f);
+        for (int i = 0; i < count; i++)
+            slotPositions.Add(new Vector3(startX + i * cardSpacing, yOffset, 0f));
+
+        for (int i = 0; i < count; i++)
+        {
+            var go = cardGOs[i];
+            go.transform.localScale    = Vector3.one * cardScale;
+            go.transform.localPosition = slotPositions[i];
         }
     }
 }

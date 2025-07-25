@@ -19,6 +19,10 @@ public class SelectionManager : MonoBehaviour
     public List<Tile> tileOptions; // Cases jaunes
     private List<Tile> temporaryHighlights = new List<Tile>(); // Cases violettes
 
+    [HideInInspector]
+    public Tile hoveredTile;
+
+
     private void Awake()
     {
         if (Instance == null)
@@ -208,6 +212,8 @@ public class SelectionManager : MonoBehaviour
 
     public void OnTileHovered(Tile tile)
     {
+        hoveredTile = tile;
+
         if (currentAction == PlayerAction.SpecialAttack)
         {
             if (tileOptions != null && tileOptions.Contains(tile))
@@ -232,6 +238,7 @@ public class SelectionManager : MonoBehaviour
 
     public void OnTileUnhovered(Tile tile)
     {
+        if (hoveredTile == tile) hoveredTile = null;
         if (currentAction == PlayerAction.SpecialAttack)
         {
             ShowAbilityTargets();

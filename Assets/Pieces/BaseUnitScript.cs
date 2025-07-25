@@ -24,6 +24,52 @@ public class BaseUnitScript : MonoBehaviour
     public GameObject statChangePopupPrefab;
 
 
+    void OnMouseDown()
+{
+    // 1) Y a-t-il un sort en attente ?
+    if (SpellManager.Instance != null 
+     && SpellManager.Instance.pendingSpellValue > 0)
+    {
+        string spell = SpellManager.Instance.pendingSpellName;
+        int    val   = SpellManager.Instance.pendingSpellValue;
+
+        switch (spell)
+        {
+            case "fireball_0":
+                // inflige val dégâts
+                SetCurrentHealth(GetCurrentHealth() - val);
+                Debug.Log($"{name} subit {val} dégâts de Boule de Feu");
+                break;
+
+            case "heal":
+                // soigne val points
+                SetCurrentHealth(GetCurrentHealth() + val);
+                Debug.Log($"{name} est soigné de {val} PV");
+                break;
+
+            case "shield":
+                // par exemple : ajoute val à maxHealth
+                SetMaxHealth(GetMaxHealth() + val);
+                Debug.Log($"{name} gagne {val} de Bouclier (PV max)");
+                break;
+
+            default:
+                Debug.LogWarning($"Sort inconnu : {spell}");
+                break;
+        }
+
+        // 2) on vide le sort et on stoppe là
+        SpellManager.Instance.ClearSpell();
+        return;
+    }
+
+    // 3) sinon, ta logique normale de sélection
+    var myTile = GetComponentInParent<Tile>();
+    if (myTile != null)
+        SelectionManager.Instance.OnTileSelected(myTile);
+}
+
+
     private void Start()
     {
         currentHealth = maxHealth;
@@ -250,6 +296,11 @@ public class BaseUnitScript : MonoBehaviour
 
         return result;
     }
+    
+        public void TakeDamage(int amount)
+    {
+        SetCurrentHealth(GetCurrentHealth() - amount);
+    }
 
     public List<Tile> FilterTiles(List<Tile> tiles, Tile originTile, TileFilter filter)
     {
@@ -280,7 +331,7 @@ public class BaseUnitScript : MonoBehaviour
                 case TileFilter.Enemy:
                     Debug.Log("ENNEMI");
                     if (tile.IsOccupied())
-                    {   
+                    {
                         Debug.Log($"ALED: {tile.currentPiece.team}");
                         if (tile.currentPiece != null && tile.currentPiece.team != this.team)
                             filteredTiles.Add(tile);

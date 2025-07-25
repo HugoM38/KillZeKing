@@ -2684,12 +2684,24 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardPrefab: {fileID: 1051495807850602242, guid: da778f62b3bf9434790568c498d64acb, type: 3}
   cardFrontSprites:
-  - {fileID: 21300000, guid: 436afa7c054685f48bc8b692c30b0bf2, type: 3}
-  - {fileID: 21300000, guid: 6572695cff069d244b5d6c438738696a, type: 3}
-  - {fileID: 21300000, guid: 15a9eefeb3562b24e8b4f6f20e0a00c0, type: 3}
-  cardBackSprite: {fileID: 21300000, guid: b7ac8d6de5877a84699b7fd4ad629fb3, type: 3}
+  - {fileID: 5353841184698615464, guid: bf0a68cfe20bd45c7a592e2984bd1a6c, type: 3}
+  - {fileID: -1049461823314036041, guid: ae7b851fa246a43bf913cbc6de7d755a, type: 3}
+  - {fileID: 2389193319765324094, guid: c530162fdb6cd41f6b18f16c94783ee5, type: 3}
+  cardNames:
+  - Boule de Feu
+  - heal
+  - shield
+  cardValues: 010000000100000001000000
+  deckSize: 20
+  handSize: 3
+  cardBackSprite: {fileID: -4571828015118065507, guid: e4aa5e71b635443c1a63cfd3a9628548, type: 3}
+  cardPrefab: {fileID: 1051495807850602242, guid: da778f62b3bf9434790568c498d64acb, type: 3}
+  cardScale: 0.3
+  cardSpacing: 3
+  yOffset: -4
+  cardGOs: []
+  slotPositions: []
 --- !u!4 &1935368755
 Transform:
   m_ObjectHideFlags: 0
