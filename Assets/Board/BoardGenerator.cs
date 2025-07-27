@@ -42,6 +42,13 @@ public class BoardGenerator : MonoBehaviour
     public BarricadeScript barricadePrefab;
     public ShieldScript bouclierPrefab;
 
+    [Header("Héros")]
+    public DominusScript dominusPrefab;
+    public InspirisScript inspirisPrefab;
+    public SanguinaScript sanguinaPrefab;
+    public MachinaScript machinaPrefab;
+    public VeyraScript VeyraPrefab;
+
     public static BoardGenerator Instance;
 
     private void Awake()
@@ -188,6 +195,20 @@ public class BoardGenerator : MonoBehaviour
         SpawnUnit(tourellePrefab, new Vector2Int(5, height - 1), BaseUnitScript.Team.Enemy);
         SpawnUnit(barricadePrefab, new Vector2Int(6, height - 1), BaseUnitScript.Team.Enemy);
         SpawnUnit(bouclierPrefab, new Vector2Int(7, height - 1), BaseUnitScript.Team.Enemy);
+
+        // Heros
+        SpawnUnit(dominusPrefab, new Vector2Int(8, 0), BaseUnitScript.Team.Player);
+        SpawnUnit(inspirisPrefab, new Vector2Int(9, 0), BaseUnitScript.Team.Player);
+        SpawnUnit(machinaPrefab, new Vector2Int(10, 0), BaseUnitScript.Team.Player);
+        SpawnUnit(sanguinaPrefab, new Vector2Int(11, 0), BaseUnitScript.Team.Player);
+        SpawnUnit(VeyraPrefab, new Vector2Int(12, 0), BaseUnitScript.Team.Player);
+
+        SpawnUnit(dominusPrefab, new Vector2Int(8, height - 1), BaseUnitScript.Team.Enemy);
+        SpawnUnit(inspirisPrefab, new Vector2Int(9, height - 1), BaseUnitScript.Team.Enemy);
+        SpawnUnit(machinaPrefab, new Vector2Int(10, height - 1), BaseUnitScript.Team.Enemy);
+        SpawnUnit(sanguinaPrefab, new Vector2Int(11, height -1), BaseUnitScript.Team.Enemy);
+        SpawnUnit(VeyraPrefab, new Vector2Int(12, height -1), BaseUnitScript.Team.Enemy);
+
     }
 
     void SpawnUnit(BaseUnitScript prefab, Vector2Int position, BaseUnitScript.Team team)

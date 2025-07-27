@@ -401,6 +401,7 @@ GameObject:
   m_Component:
   - component: {fileID: 228782135}
   - component: {fileID: 228782134}
+  - component: {fileID: 228782136}
   m_Layer: 0
   m_Name: SelectionManager.cs
   m_TagString: Untagged
@@ -424,6 +425,7 @@ MonoBehaviour:
   targetTile: {fileID: 0}
   currentAction: 0
   tileOptions: []
+  hoveredTile: {fileID: 0}
 --- !u!4 &228782135
 Transform:
   m_ObjectHideFlags: 0
@@ -439,6 +441,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &228782136
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 228782133}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cf2bcda76aa91214b8dbf652ffefceef, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  BarricadePrefab: {fileID: 1885831950409459545, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
+  ShieldPrefab: {fileID: 1885831950409459545, guid: cadbd7698f143b243b8a30f231c12501, type: 3}
+  TurretPrefab: {fileID: 1885831950409459545, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
 --- !u!1 &248529192
 GameObject:
   m_ObjectHideFlags: 0
@@ -2640,6 +2657,11 @@ MonoBehaviour:
   tourellePrefab: {fileID: 8510984063766556241, guid: 7c8ef2513b6bddb4ea0601edb28289df, type: 3}
   barricadePrefab: {fileID: 5629069220186657471, guid: 307178ed52e618741a34e78aa93f1739, type: 3}
   bouclierPrefab: {fileID: -575482631214880883, guid: cadbd7698f143b243b8a30f231c12501, type: 3}
+  dominusPrefab: {fileID: 103497709857897431, guid: ccb3298ea5c3e6143a9d9b50ce79ce44, type: 3}
+  inspirisPrefab: {fileID: 6392408126736488007, guid: b8d3ced2a52ebfa4d95301bfe6c3fcde, type: 3}
+  sanguinaPrefab: {fileID: 3212081954056501184, guid: 2c82b1a26e7ab3d41a3a511db7de736a, type: 3}
+  machinaPrefab: {fileID: 154169515072024281, guid: 7cf446d61e10b07409fd87278678698d, type: 3}
+  VeyraPrefab: {fileID: -3616626110183690256, guid: bc89e8fde79e79140b47affd71fb9924, type: 3}
 --- !u!4 &1846159932
 Transform:
   m_ObjectHideFlags: 0

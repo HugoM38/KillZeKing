@@ -3,16 +3,12 @@ using UnityEngine;
 
 public class IngenieurScript : BaseUnitScript
 {
-    [SerializeField] private GameObject barricadePrefab;
-    [SerializeField] private GameObject tourellePrefab;
-    [SerializeField] private GameObject shieldPrefab;
-
     public override List<Tile> ShowSpecialAttackOptions()
     {
         Tile originTile = SelectionManager.Instance.selectedTile;
         if (originTile == null)
         {
-            Debug.LogWarning("[Ingénieur] Aucun selectedTile défini.");
+            Debug.LogWarning("[Ingenieur] Aucun selectedTile défini.");
             return new List<Tile>();
         }
 
@@ -32,16 +28,19 @@ public class IngenieurScript : BaseUnitScript
     {
         List<Tile> area = new List<Tile>();
 
-        if (!targetTile.IsOccupied())
-        {
-            Tile originTile = SelectionManager.Instance.selectedTile;
-            Tile[,] board = BoardGenerator.Instance.GetBoard();
-            List<Tile> inRange = GetTilesInRange(originTile, GetAttackRange(), board);
+        if (targetTile == null || targetTile.IsOccupied())
+            return area;
 
-            if (inRange.Contains(targetTile))
-            {
-                area.Add(targetTile);
-            }
+        Tile originTile = SelectionManager.Instance.selectedTile;
+        if (originTile == null)
+            return area;
+
+        Tile[,] board = BoardGenerator.Instance.GetBoard();
+        List<Tile> tilesInRange = GetTilesInRange(originTile, GetAttackRange(), board);
+
+        if (tilesInRange.Contains(targetTile))
+        {
+            area.Add(targetTile);
         }
 
         return area;
@@ -49,44 +48,72 @@ public class IngenieurScript : BaseUnitScript
 
     public override void SpecialAttack(BaseUnitScript _)
     {
-        Tile targetTile = SelectionManager.Instance.targetTile;
-
-        if (targetTile == null || targetTile.IsOccupied())
+        Tile tile = SelectionManager.Instance.targetTile;
+        if (tile == null || tile.IsOccupied())
         {
-            Debug.LogWarning("[Ingénieur] La case est déjà occupée ou invalide.");
+            Debug.LogWarning("[Ingenieur] Impossible d'invoquer sur cette case.");
             return;
         }
 
-        GameObject prefabToSummon = GetRandomStructurePrefab();
-        if (prefabToSummon == null)
+        if (PrefabFactory.Instance == null)
         {
-            Debug.LogWarning("[Ingénieur] Aucun prefab d'invocation défini.");
+            Debug.LogError("[Ingenieur] PrefabFactory.Instance est null !");
             return;
         }
 
-        GameObject newStructure = Instantiate(prefabToSummon, targetTile.transform.position, Quaternion.identity);
-        BaseUnitScript structureScript = newStructure.GetComponent<BaseUnitScript>();
-        if (structureScript != null)
+        GameObject[] pool = new GameObject[]
         {
-            structureScript.team = this.team;
-            targetTile.SetPiece(structureScript);
-            Debug.Log($"{name} invoque {structureScript.name} sur la case {targetTile.coordinates}");
-        }
-        else
+            PrefabFactory.Instance.BarricadePrefab,
+            PrefabFactory.Instance.ShieldPrefab,
+            PrefabFactory.Instance.TurretPrefab
+        };
+
+        GameObject prefab = pool[Random.Range(0, pool.Length)];
+        GameObject clone = Instantiate(prefab, tile.transform.position, Quaternion.identity);
+        BaseUnitScript unit = clone.GetComponent<BaseUnitScript>();
+
+        if (unit == null)
         {
-            Debug.LogError("[Ingénieur] Le prefab ne contient pas de script de type BaseUnitScript !");
-            Destroy(newStructure);
+            Debug.LogError("[Ingenieur] Le prefab invoqué ne contient pas BaseUnitScript.");
+            Destroy(clone);
             return;
+        }
+
+        unit.team = this.team;
+
+        // ✅ Ajout important : placer l’unité sur la case
+        tile.SetPiece(unit);
+
+        // ✅ Appliquer le buff si Machina est dans l’équipe
+        MachinaScript[] machinas = GameObject.FindObjectsByType<MachinaScript>(FindObjectsSortMode.None);
+        foreach (MachinaScript machina in machinas)
+        {
+            if (machina.team == this.team)
+            {
+                machina.EnhanceUnit(unit);  // Appliquer le buff
+                break;
+            }
         }
 
         TurnManager.Instance.SpendPA();
         SetCurrentEnergy(0);
     }
 
-    private GameObject GetRandomStructurePrefab()
+    private void TryEnhanceUnit(BaseUnitScript unit)
     {
-        GameObject[] options = new GameObject[] { barricadePrefab, tourellePrefab, shieldPrefab };
-        int index = Random.Range(0, options.Length);
-        return options[index];
+        #if UNITY_2023_1_OR_NEWER
+                MachinaScript[] machinas = Object.FindObjectsByType<MachinaScript>(FindObjectsSortMode.None);
+        #else
+                MachinaScript[] machinas = Object.FindObjectsOfType<MachinaScript>();
+        #endif
+
+        foreach (var machina in machinas)
+        {
+            if (machina != null && machina.team == this.team && machina.IsBoostActive())
+            {
+                machina.EnhanceUnit(unit);
+                break;
+            }
+        }
     }
 }
