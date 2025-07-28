@@ -55,7 +55,7 @@ public class Tile : MonoBehaviour
     {
         return currentPiece != null;
     }
-    
+
     private void OnMouseEnter()
     {
         SelectionManager.Instance?.OnTileHovered(this);
@@ -78,4 +78,10 @@ public class Tile : MonoBehaviour
             _ => null
         };
     }
+
+    public bool IsWalkable()
+    {
+        return tileType != TileType.Water;
+    }
+
 }

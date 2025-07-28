@@ -25,49 +25,49 @@ public class BaseUnitScript : MonoBehaviour
 
 
     void OnMouseDown()
-{
-    // 1) Y a-t-il un sort en attente ?
-    if (SpellManager.Instance != null 
-     && SpellManager.Instance.pendingSpellValue > 0)
     {
-        string spell = SpellManager.Instance.pendingSpellName;
-        int    val   = SpellManager.Instance.pendingSpellValue;
-
-        switch (spell)
+        // 1) Y a-t-il un sort en attente ?
+        if (SpellManager.Instance != null
+         && SpellManager.Instance.pendingSpellValue > 0)
         {
-            case "fireball_0":
-                // inflige val dégâts
-                SetCurrentHealth(GetCurrentHealth() - val);
-                Debug.Log($"{name} subit {val} dégâts de Boule de Feu");
-                break;
+            string spell = SpellManager.Instance.pendingSpellName;
+            int val = SpellManager.Instance.pendingSpellValue;
 
-            case "heal":
-                // soigne val points
-                SetCurrentHealth(GetCurrentHealth() + val);
-                Debug.Log($"{name} est soigné de {val} PV");
-                break;
+            switch (spell)
+            {
+                case "fireball_0":
+                    // inflige val dégâts
+                    SetCurrentHealth(GetCurrentHealth() - val);
+                    Debug.Log($"{name} subit {val} dégâts de Boule de Feu");
+                    break;
 
-            case "shield":
-                // par exemple : ajoute val à maxHealth
-                SetMaxHealth(GetMaxHealth() + val);
-                Debug.Log($"{name} gagne {val} de Bouclier (PV max)");
-                break;
+                case "heal":
+                    // soigne val points
+                    SetCurrentHealth(GetCurrentHealth() + val);
+                    Debug.Log($"{name} est soigné de {val} PV");
+                    break;
 
-            default:
-                Debug.LogWarning($"Sort inconnu : {spell}");
-                break;
+                case "shield":
+                    // par exemple : ajoute val à maxHealth
+                    SetMaxHealth(GetMaxHealth() + val);
+                    Debug.Log($"{name} gagne {val} de Bouclier (PV max)");
+                    break;
+
+                default:
+                    Debug.LogWarning($"Sort inconnu : {spell}");
+                    break;
+            }
+
+            // 2) on vide le sort et on stoppe là
+            SpellManager.Instance.ClearSpell();
+            return;
         }
 
-        // 2) on vide le sort et on stoppe là
-        SpellManager.Instance.ClearSpell();
-        return;
+        // 3) sinon, ta logique normale de sélection
+        var myTile = GetComponentInParent<Tile>();
+        if (myTile != null)
+            SelectionManager.Instance.OnTileSelected(myTile);
     }
-
-    // 3) sinon, ta logique normale de sélection
-    var myTile = GetComponentInParent<Tile>();
-    if (myTile != null)
-        SelectionManager.Instance.OnTileSelected(myTile);
-}
 
 
     private void Start()
@@ -167,6 +167,7 @@ public class BaseUnitScript : MonoBehaviour
 
         List<Tile> tilesInRange = GetTilesInRange(originTile, movementRange, board);
         List<Tile> emptyTiles = FilterTiles(tilesInRange, originTile, TileFilter.Empty);
+        emptyTiles = emptyTiles.FindAll(tile => tile.IsWalkable());
         foreach (Tile tile in emptyTiles)
         {
             tile.SetHighlight(Color.blue);
@@ -252,10 +253,10 @@ public class BaseUnitScript : MonoBehaviour
 
         Vector2Int[] directions = new Vector2Int[]
         {
-            Vector2Int.up,
-            Vector2Int.down,
-            Vector2Int.left,
-            Vector2Int.right
+        Vector2Int.up,
+        Vector2Int.down,
+        Vector2Int.left,
+        Vector2Int.right
         };
 
         int boardWidth = board.GetLength(0);
@@ -285,19 +286,22 @@ public class BaseUnitScript : MonoBehaviour
                 if (visited.Contains(nextTile))
                     continue;
 
-                visited.Add(nextTile);
-                result.Add(nextTile);
-                if (nextTile.IsOccupied())
+                if (!nextTile.IsWalkable())
                     continue;
 
+                if (nextTile.IsOccupied() && nextTile.currentPiece.team != this.team)
+                    continue;
+
+                visited.Add(nextTile);
                 queue.Enqueue((nextTile, dist + 1));
             }
         }
 
         return result;
     }
-    
-        public void TakeDamage(int amount)
+
+
+    public void TakeDamage(int amount)
     {
         SetCurrentHealth(GetCurrentHealth() - amount);
     }
