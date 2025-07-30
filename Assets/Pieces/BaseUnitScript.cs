@@ -286,10 +286,10 @@ public class BaseUnitScript : MonoBehaviour
                 if (visited.Contains(nextTile))
                     continue;
 
-                if (!nextTile.IsWalkable())
+                if (nextTile.IsOccupied() && nextTile.currentPiece.team != this.team)
                     continue;
 
-                if (nextTile.IsOccupied() && nextTile.currentPiece.team != this.team)
+                if (!nextTile.IsWalkable())
                     continue;
 
                 visited.Add(nextTile);
