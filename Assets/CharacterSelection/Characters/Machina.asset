@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8a6d0cec3a314a2984ab9841b7a3293, type: 3}
+  m_Name: Machina
+  m_EditorClassIdentifier: 
+  characterName: Machina
+  characterIcon: {fileID: 3262617302095245725, guid: 2f3b38a052f694a36b08fccd60d3d47a, type: 3}
+  maxHealth: 30
+  damage: 2
+  attackRange: 2
+  movementRange: 3
+  energy: 7
+  specialName: 
+  specialDescription: "Toutes les unit\xE9s invoqu\xE9es par Machina (via des ing\xE9nieurs)
+    b\xE9n\xE9ficient automatiquement d'am\xE9liorations permanentes :\n\U0001F9F1
+    Barricade : +3 PV Max et +3 PV actuels\n\n\n\U0001F6E1\uFE0F Shield : +1 de port\xE9e
+    d\u2019attaque, +1 PV Max, +1 PV actuel\n\n\n\U0001F3AF Tourelle : +1 de port\xE9e
+    d\u2019attaque, +1 en d\xE9g\xE2ts"

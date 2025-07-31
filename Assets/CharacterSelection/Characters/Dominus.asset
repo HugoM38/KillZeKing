@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8a6d0cec3a314a2984ab9841b7a3293, type: 3}
+  m_Name: Dominus
+  m_EditorClassIdentifier: 
+  characterName: Dominus
+  characterIcon: {fileID: -5309347889058812060, guid: d1706663476c44e8aac15bd341e062f1, type: 3}
+  maxHealth: 30
+  damage: 3
+  attackRange: 1
+  movementRange: 5
+  energy: 4
+  specialName: 
+  specialDescription: "Dominus inflige 1 d\xE9g\xE2t fixe \xE0 une unit\xE9 ennemie
+    dans sa port\xE9e d\u2019attaque.\n Si cette attaque tue l\u2019unit\xE9, elle
+    est ressuscit\xE9e imm\xE9diatement sous le contr\xF4le de Dominus"

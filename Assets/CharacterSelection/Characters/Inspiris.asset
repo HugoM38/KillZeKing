@@ -1,0 +1,26 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8a6d0cec3a314a2984ab9841b7a3293, type: 3}
+  m_Name: Inspiris
+  m_EditorClassIdentifier: 
+  characterName: Inspiris
+  characterIcon: {fileID: -2203078214675534100, guid: 894a3a96f7b914fffa876394f9a5a1ae, type: 3}
+  maxHealth: 30
+  damage: 2
+  attackRange: 3
+  movementRange: 2
+  energy: 5
+  specialName: 
+  specialDescription: "Inspiris s\xE9lectionne al\xE9atoirement une statistique parmi
+    les suivantes :\n\nPV\nPV Max\nAttaque\nPort\xE9e d\u2019attaque\nPort\xE9e de
+    d\xE9placement\n\nPuis toutes les unit\xE9s alli\xE9es re\xE7oivent +1 dans cette
+    statistique."

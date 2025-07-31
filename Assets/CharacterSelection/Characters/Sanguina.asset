@@ -1,0 +1,25 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c8a6d0cec3a314a2984ab9841b7a3293, type: 3}
+  m_Name: Sanguina
+  m_EditorClassIdentifier: 
+  characterName: Sanguina
+  characterIcon: {fileID: 8972627256000283771, guid: 8472fbdb61f8246aea23bc01ca2bc882, type: 3}
+  maxHealth: 30
+  damage: 3
+  attackRange: 1
+  movementRange: 2
+  energy: 3
+  specialName: 
+  specialDescription: "Inflige 2 d\xE9g\xE2ts \xE0 une unit\xE9 ennemie dans la port\xE9e
+    d\u2019attaque.\n\n\nSi cette attaque tue l\u2019unit\xE9, Sanguina gagne +1
+    PV Max et r\xE9cup\xE8re 3 PV.\n"
