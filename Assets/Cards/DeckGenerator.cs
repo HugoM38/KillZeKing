@@ -8,7 +8,7 @@ public class FullDeckGenerator : MonoBehaviour
     [Tooltip("Glisse-dépose ici tes prefabs de carte (Card + CardDragger déjà configurés)")]
     public List<GameObject> deckPrefabs = new List<GameObject>();
 
-    [Header("Paramètres de pioche")]  
+    [Header("Paramètres de pioche")]
     [Tooltip("Taille totale du deck (pioche avec remise)")]
     public int deckSize = 20;
     [Tooltip("Nombre de cartes à tirer dans la main au départ (<=4)")]
@@ -16,13 +16,17 @@ public class FullDeckGenerator : MonoBehaviour
     [Tooltip("Nombre maximal de cartes en main (<=8)")]
     public int maxHandSize = 8;
 
-    [Header("Disposition de la main")]  
+    [Header("Disposition de la main")]
     [Tooltip("Espacement horizontal entre cartes")]
     public float cardSpacing = 2.5f;
     [Tooltip("Espacement vertical entre lignes de cartes")]
     public float rowSpacing = 3f;
     [Tooltip("Point (X,Y) centre de la première ligne de la main")]
     public Vector2 handOrigin = new Vector2(0f, -4f);
+
+    [Header("Options de visibilité")]
+    [Tooltip("Masquer complètement l'affichage de cette main (utile pour l'ennemi)")]
+    public bool hideHand = false;
 
     // **Ne rien toucher en-dessous**
     private List<GameObject> deckPool    = new List<GameObject>();
@@ -34,7 +38,7 @@ public class FullDeckGenerator : MonoBehaviour
     {
         BuildDeckPool();
         DrawInitialHand();
-        DisplayHand();
+        DisplayHand(); // on instancie toujours, puis on cache si besoin
     }
 
     /// <summary>1) Constitue et mélange la pioche à partir de deckPrefabs.</summary>
@@ -53,12 +57,9 @@ public class FullDeckGenerator : MonoBehaviour
             return;
         }
 
-        // On remplit deckSize fois, tirage avec remise
+        // Tirage avec remise
         for (int i = 0; i < deckSize; i++)
-        {
-            int r = Random.Range(0, validPrefabs.Count);
-            deckPool.Add(validPrefabs[r]);
-        }
+            deckPool.Add(validPrefabs[Random.Range(0, validPrefabs.Count)]);
 
         // Mélange Fisher–Yates
         for (int i = 0; i < deckPool.Count; i++)
@@ -70,7 +71,7 @@ public class FullDeckGenerator : MonoBehaviour
         }
     }
 
-    /// <summary>2) Pioche initiale de initialHandSize cartes.</summary>
+    /// <summary>2) Pioche initiale.</summary>
     private void DrawInitialHand()
     {
         currentHand.Clear();
@@ -82,15 +83,12 @@ public class FullDeckGenerator : MonoBehaviour
         }
     }
 
-    /// <summary>3) Pioche une carte (appelé par TurnManager), sans dépasser maxHandSize.</summary>
+    /// <summary>3) Pioche une carte (appelé par TurnManager).</summary>
     public void DrawOneCard()
     {
-        if (deckPool.Count == 0) return;
-        if (currentHand.Count >= maxHandSize)
-        {
-            Debug.LogWarning("Main pleine ! Impossible de piocher davantage.");
+        if (deckPool.Count == 0 || currentHand.Count >= maxHandSize)
             return;
-        }
+
         currentHand.Add(deckPool[0]);
         deckPool.RemoveAt(0);
         DisplayHand();
@@ -99,11 +97,14 @@ public class FullDeckGenerator : MonoBehaviour
     /// <summary>4) Retire la carte jouée de la main.</summary>
     public void RemoveCardAt(int idx)
     {
-        if (idx >= 0 && idx < currentHand.Count)
-            currentHand.RemoveAt(idx);
+        if (idx < 0 || idx >= currentHand.Count)
+            return;
+
+        currentHand.RemoveAt(idx);
+        DisplayHand();
     }
 
-    /// <summary>5) Affiche la main en deux lignes (max 4 cartes par ligne).</summary>
+    /// <summary>5) (Ré)Affiche la main en deux lignes (max 4 cartes par ligne).</summary>
     public void DisplayHand()
     {
         // a) cleanup des anciennes cartes
@@ -113,32 +114,35 @@ public class FullDeckGenerator : MonoBehaviour
 
         int count = currentHand.Count;
         int maxPerRow = 4;
-        int rows = Mathf.CeilToInt(count / (float)maxPerRow);
 
-        // b) calcul des positions pour chaque carte
+        // b) calcul des positions
         for (int i = 0; i < count; i++)
         {
-            int row = i / maxPerRow;
-            int indexInRow = i % maxPerRow;
-            int cardsInThisRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
-            float startX = handOrigin.x - cardSpacing * (cardsInThisRow - 1) / 2f;
-            float x = startX + indexInRow * cardSpacing;
-            float y = handOrigin.y - row * rowSpacing;
+            int row          = i / maxPerRow;
+            int indexInRow   = i % maxPerRow;
+            int cardsInRow   = Mathf.Min(maxPerRow, count - row * maxPerRow);
+            float startX     = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
+            float x          = startX + indexInRow * cardSpacing;
+            float y          = handOrigin.y - row * rowSpacing;
             slotPositions.Add(new Vector3(x, y, 0f));
         }
 
-        // c) instanciation
+        // c) instanciation & visibilité
         for (int i = 0; i < count; i++)
         {
             var prefab = currentHand[i];
             if (prefab == null)
             {
-                Debug.LogError($"Carte n°{i} est null, impossible d’instancier !");
+                Debug.LogError($"Carte n°{i} est null !");
                 continue;
             }
+
             var go = Instantiate(prefab, transform);
-            cardGOs.Add(go);
             go.transform.localPosition = slotPositions[i];
+            cardGOs.Add(go);
+
+            // **HERE** : on cache seulement visuellement si hideHand activé
+            go.SetActive(!hideHand);
 
             // on relie le deckGen à chaque CardDragger
             var drag = go.GetComponent<CardDragger>();
@@ -150,12 +154,23 @@ public class FullDeckGenerator : MonoBehaviour
     /// <summary>6) Échange deux cartes (drag & drop).</summary>
     public void SwapCards(int a, int b)
     {
-        var tmpH = currentHand[a]; currentHand[a] = currentHand[b]; currentHand[b] = tmpH;
-        var tmpG = cardGOs[a];      cardGOs[a]      = cardGOs[b];      cardGOs[b]      = tmpG;
+        if (a < 0 || b < 0 || a >= currentHand.Count || b >= currentHand.Count)
+            return;
+
+        // échange données
+        var tmpH = currentHand[a];
+        currentHand[a] = currentHand[b];
+        currentHand[b] = tmpH;
+
+        // échange visuals
+        var tmpG = cardGOs[a];
+        cardGOs[a] = cardGOs[b];
+        cardGOs[b] = tmpG;
+
         RepositionAll();
     }
 
-    /// <summary>7) Repositionne la main sans ré-instancier.</summary>
+    /// <summary>7) Repositionne simplement la main sans ré-instancier.</summary>
     public void RepositionAll()
     {
         slotPositions.Clear();
@@ -164,12 +179,12 @@ public class FullDeckGenerator : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            int row = i / maxPerRow;
+            int row        = i / maxPerRow;
             int indexInRow = i % maxPerRow;
-            int cardsInThisRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
-            float startX = handOrigin.x - cardSpacing * (cardsInThisRow - 1) / 2f;
-            float x = startX + indexInRow * cardSpacing;
-            float y = handOrigin.y - row * rowSpacing;
+            int cardsInRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
+            float startX   = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
+            float x        = startX + indexInRow * cardSpacing;
+            float y        = handOrigin.y - row * rowSpacing;
             slotPositions.Add(new Vector3(x, y, 0f));
         }
 
