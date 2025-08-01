@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Inspiris
   characterIcon: {fileID: -2203078214675534100, guid: 894a3a96f7b914fffa876394f9a5a1ae, type: 3}
+  characterPrefab: {fileID: 1885831950409459545, guid: b8d3ced2a52ebfa4d95301bfe6c3fcde, type: 3}
   maxHealth: 30
   damage: 2
   attackRange: 3

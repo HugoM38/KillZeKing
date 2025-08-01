@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Sanguina
   characterIcon: {fileID: 8972627256000283771, guid: 8472fbdb61f8246aea23bc01ca2bc882, type: 3}
+  characterPrefab: {fileID: 1885831950409459545, guid: 2c82b1a26e7ab3d41a3a511db7de736a, type: 3}
   maxHealth: 30
   damage: 3
   attackRange: 1

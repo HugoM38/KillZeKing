@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Veyra
   characterIcon: {fileID: -7115266815788092208, guid: e110e9c8d050741efb01ddac2176ed04, type: 3}
+  characterPrefab: {fileID: 1885831950409459545, guid: bc89e8fde79e79140b47affd71fb9924, type: 3}
   maxHealth: 30
   damage: 2
   attackRange: 4

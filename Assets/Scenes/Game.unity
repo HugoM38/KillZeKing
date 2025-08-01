@@ -2718,6 +2718,7 @@ MonoBehaviour:
   cardSpacing: 3
   rowSpacing: 3
   handOrigin: {x: 15, y: -4}
+  hideHand: 0
   cardGOs: []
   slotPositions: []
 --- !u!4 &1935368755
@@ -2853,6 +2854,7 @@ MonoBehaviour:
   cardSpacing: 3
   rowSpacing: 3
   handOrigin: {x: 15, y: -4}
+  hideHand: 1
   cardGOs: []
   slotPositions: []
 --- !u!4 &2078645149

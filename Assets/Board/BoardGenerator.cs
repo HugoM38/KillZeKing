@@ -141,73 +141,20 @@ public class BoardGenerator : MonoBehaviour
         int playerY = 1;
         int enemyY = height - 2;
 
-        // Guerriers
-        SpawnUnit(guerrierPrefab, new Vector2Int(0, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(chevalierPrefab, new Vector2Int(1, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(berserkerPrefab, new Vector2Int(2, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(sentinellePrefab, new Vector2Int(3, playerY), BaseUnitScript.Team.Player);
+        GameObject playerHeroGO = GameManager.Instance.heroSelected;
+        GameObject enemyHeroGO = GameManager.Instance.enemySelected;
 
-        SpawnUnit(guerrierPrefab, new Vector2Int(0, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(chevalierPrefab, new Vector2Int(1, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(berserkerPrefab, new Vector2Int(2, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(sentinellePrefab, new Vector2Int(3, enemyY), BaseUnitScript.Team.Enemy);
+        if (playerHeroGO != null)
+        {
+            BaseUnitScript playerHeroPrefab = playerHeroGO.GetComponent<BaseUnitScript>();
+            SpawnUnit(playerHeroPrefab, new Vector2Int(width / 2, playerY), BaseUnitScript.Team.Player);
+        }
 
-        // Mages
-        SpawnUnit(magePrefab, new Vector2Int(4, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(sorcierPrefab, new Vector2Int(5, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(occultistePrefab, new Vector2Int(6, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(enchanteurPrefab, new Vector2Int(7, playerY), BaseUnitScript.Team.Player);
-
-        SpawnUnit(magePrefab, new Vector2Int(4, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(sorcierPrefab, new Vector2Int(5, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(occultistePrefab, new Vector2Int(6, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(enchanteurPrefab, new Vector2Int(7, enemyY), BaseUnitScript.Team.Enemy);
-
-        // Archers
-        SpawnUnit(archerPrefab, new Vector2Int(8, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(sniperPrefab, new Vector2Int(9, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(rangerPrefab, new Vector2Int(10, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(piegeurPrefab, new Vector2Int(11, playerY), BaseUnitScript.Team.Player);
-
-        SpawnUnit(archerPrefab, new Vector2Int(8, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(sniperPrefab, new Vector2Int(9, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(rangerPrefab, new Vector2Int(10, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(piegeurPrefab, new Vector2Int(11, enemyY), BaseUnitScript.Team.Enemy);
-
-        // Voleurs
-        SpawnUnit(voleurPrefab, new Vector2Int(12, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(assassinPrefab, new Vector2Int(13, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(espionPrefab, new Vector2Int(14, playerY), BaseUnitScript.Team.Player);
-        SpawnUnit(saboteurPrefab, new Vector2Int(15, playerY), BaseUnitScript.Team.Player);
-
-        SpawnUnit(voleurPrefab, new Vector2Int(12, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(assassinPrefab, new Vector2Int(13, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(espionPrefab, new Vector2Int(14, enemyY), BaseUnitScript.Team.Enemy);
-        SpawnUnit(saboteurPrefab, new Vector2Int(15, enemyY), BaseUnitScript.Team.Enemy);
-
-        // Ingénieurs
-        SpawnUnit(ingenieurPrefab, new Vector2Int(4, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(tourellePrefab, new Vector2Int(5, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(barricadePrefab, new Vector2Int(6, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(bouclierPrefab, new Vector2Int(7, 0), BaseUnitScript.Team.Player);
-
-        SpawnUnit(ingenieurPrefab, new Vector2Int(4, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(tourellePrefab, new Vector2Int(5, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(barricadePrefab, new Vector2Int(6, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(bouclierPrefab, new Vector2Int(7, height - 1), BaseUnitScript.Team.Enemy);
-
-        // Heros
-        SpawnUnit(dominusPrefab, new Vector2Int(8, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(inspirisPrefab, new Vector2Int(9, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(machinaPrefab, new Vector2Int(10, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(sanguinaPrefab, new Vector2Int(11, 0), BaseUnitScript.Team.Player);
-        SpawnUnit(VeyraPrefab, new Vector2Int(12, 0), BaseUnitScript.Team.Player);
-
-        SpawnUnit(dominusPrefab, new Vector2Int(8, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(inspirisPrefab, new Vector2Int(9, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(machinaPrefab, new Vector2Int(10, height - 1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(sanguinaPrefab, new Vector2Int(11, height -1), BaseUnitScript.Team.Enemy);
-        SpawnUnit(VeyraPrefab, new Vector2Int(12, height -1), BaseUnitScript.Team.Enemy);
+        if (enemyHeroGO != null)
+        {
+            BaseUnitScript enemyHeroPrefab = enemyHeroGO.GetComponent<BaseUnitScript>();
+            SpawnUnit(enemyHeroPrefab, new Vector2Int(width / 2, enemyY), BaseUnitScript.Team.Enemy);
+        }
 
     }
 

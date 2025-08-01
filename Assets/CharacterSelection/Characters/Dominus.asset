@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   characterName: Dominus
   characterIcon: {fileID: -5309347889058812060, guid: d1706663476c44e8aac15bd341e062f1, type: 3}
+  characterPrefab: {fileID: 1885831950409459545, guid: ccb3298ea5c3e6143a9d9b50ce79ce44, type: 3}
   maxHealth: 30
   damage: 3
   attackRange: 1

@@ -6,6 +6,8 @@ public class CharacterData : ScriptableObject
     public string characterName;
     public Sprite characterIcon;
 
+    public GameObject characterPrefab;
+
     [Header("Stats")]
     public int maxHealth;
     public int damage;
