@@ -17,17 +17,14 @@ public class VoleurScript : BaseUnitScript
         List<Tile> enemyTiles = FilterTiles(tilesInRange, originTile, TileFilter.Enemy);
 
         foreach (Tile tile in enemyTiles)
-        {
             tile.SetHighlight(Color.yellow);
-        }
 
         return enemyTiles;
     }
 
     public override List<Tile> GetSpecialAttackArea(Tile targetTile)
     {
-        List<Tile> area = new List<Tile>();
-
+        var area = new List<Tile>();
         Tile originTile = SelectionManager.Instance.selectedTile;
         if (originTile == null || originTile.currentPiece == null)
             return area;
@@ -36,12 +33,11 @@ public class VoleurScript : BaseUnitScript
             return area;
 
         Tile[,] board = BoardGenerator.Instance.GetBoard();
-        List<Tile> inRangeTiles = GetTilesInRange(originTile, GetAttackRange(), board);
+        var inRangeTiles = GetTilesInRange(originTile, GetAttackRange(), board);
 
-        if (!inRangeTiles.Contains(targetTile))
-            return area;
+        if (inRangeTiles.Contains(targetTile))
+            area.Add(targetTile);
 
-        area.Add(targetTile);
         return area;
     }
 
@@ -63,7 +59,17 @@ public class VoleurScript : BaseUnitScript
             SelectionManager.Instance.targetTile.SetPiece(null);
         }
 
-        Debug.Log("[TODO] Implémenter la pioche de carte (travail en cours dans un autre module)");
+        // ====== NOUVEAU : pioche d'une carte pour le joueur ======
+        var playerDeck = FindObjectOfType<FullDeckGenerator>();
+        if (playerDeck != null)
+        {
+            playerDeck.DrawOneCard();
+            Debug.Log("[Voleur] Vous avez pioché 1 carte !");
+        }
+        else
+        {
+            Debug.LogWarning("[Voleur] Impossible de trouver le FullDeckGenerator pour piocher !");
+        }
 
         TurnManager.Instance.SpendPA();
         SetCurrentEnergy(0);

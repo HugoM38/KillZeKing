@@ -2172,6 +2172,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de2835812d6db024280f438b4021b4af, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  playerHand: {fileID: 1935368754}
+  enemyHand: {fileID: 2078645148}
   currentPlayer: 0
   playerStats:
     pa: 1
@@ -2688,7 +2690,7 @@ GameObject:
   - component: {fileID: 1935368755}
   - component: {fileID: 1935368754}
   m_Layer: 0
-  m_Name: DeckGenerator
+  m_Name: PlayerHandContainer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -2706,22 +2708,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  cardFrontSprites:
-  - {fileID: 5353841184698615464, guid: bf0a68cfe20bd45c7a592e2984bd1a6c, type: 3}
-  - {fileID: -1049461823314036041, guid: ae7b851fa246a43bf913cbc6de7d755a, type: 3}
-  - {fileID: 2389193319765324094, guid: c530162fdb6cd41f6b18f16c94783ee5, type: 3}
-  cardNames:
-  - Boule de Feu
-  - heal
-  - shield
-  cardValues: 010000000100000001000000
+  deckPrefabs:
+  - {fileID: 1051495807850602242, guid: e3d4e3dd6dfaa42e9a0b7e74128ad5af, type: 3}
+  - {fileID: 1051495807850602242, guid: 141f516745d024360a336f08b31b65f0, type: 3}
+  - {fileID: 1051495807850602242, guid: f74a9a2c81fc0414e9a882f06ff16181, type: 3}
   deckSize: 20
-  handSize: 3
-  cardBackSprite: {fileID: -4571828015118065507, guid: e4aa5e71b635443c1a63cfd3a9628548, type: 3}
-  cardPrefab: {fileID: 1051495807850602242, guid: da778f62b3bf9434790568c498d64acb, type: 3}
-  cardScale: 0.3
+  initialHandSize: 3
+  maxHandSize: 8
   cardSpacing: 3
-  yOffset: -4
+  rowSpacing: 3
+  handOrigin: {x: 15, y: -4}
   cardGOs: []
   slotPositions: []
 --- !u!4 &1935368755
@@ -2818,6 +2814,62 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &2078645147
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 2078645149}
+  - component: {fileID: 2078645148}
+  m_Layer: 0
+  m_Name: EnnemyHandContainer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &2078645148
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078645147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deckPrefabs:
+  - {fileID: 1051495807850602242, guid: e3d4e3dd6dfaa42e9a0b7e74128ad5af, type: 3}
+  - {fileID: 1051495807850602242, guid: f74a9a2c81fc0414e9a882f06ff16181, type: 3}
+  - {fileID: 1051495807850602242, guid: 141f516745d024360a336f08b31b65f0, type: 3}
+  deckSize: 20
+  initialHandSize: 3
+  maxHandSize: 8
+  cardSpacing: 3
+  rowSpacing: 3
+  handOrigin: {x: 15, y: -4}
+  cardGOs: []
+  slotPositions: []
+--- !u!4 &2078645149
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2078645147}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -2830,3 +2882,4 @@ SceneRoots:
   - {fileID: 228782135}
   - {fileID: 1686036559}
   - {fileID: 1935368755}
+  - {fileID: 2078645149}

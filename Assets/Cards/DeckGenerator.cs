@@ -1,168 +1,179 @@
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class FullDeckGenerator : MonoBehaviour
 {
-    [Header("Types de cartes (parallel arrays)")]
-    [Tooltip("Sprites de face")]
-    public Sprite[] cardFrontSprites;
-    [Tooltip("Noms affichés pour chaque sprite")]
-    public string[] cardNames;
-    [Tooltip("Valeurs (dégât, soin, bouclier…) pour chaque sprite")]
-    public int[]    cardValues;
+    [Header("Composition du deck (préfabs de Carte)")]
+    [Tooltip("Glisse-dépose ici tes prefabs de carte (Card + CardDragger déjà configurés)")]
+    public List<GameObject> deckPrefabs = new List<GameObject>();
 
-    [Header("Paramètres du deck")]
-    [Tooltip("Taille totale du deck (mélange avec remise)")]
-    public int      deckSize = 20;
-    [Tooltip("Nombre de cartes à tirer en main")]
-    public int      handSize = 3;
+    [Header("Paramètres de pioche")]  
+    [Tooltip("Taille totale du deck (pioche avec remise)")]
+    public int deckSize = 20;
+    [Tooltip("Nombre de cartes à tirer dans la main au départ (<=4)")]
+    public int initialHandSize = 3;
+    [Tooltip("Nombre maximal de cartes en main (<=8)")]
+    public int maxHandSize = 8;
 
-    [Header("Visuels & Layout")]
-    public Sprite   cardBackSprite;
-    public GameObject cardPrefab;
-    [Tooltip("Échelle relative de chaque carte (1 = taille du prefab)")]
-    public float      cardScale   = 0.2f;
+    [Header("Disposition de la main")]  
     [Tooltip("Espacement horizontal entre cartes")]
-    public float      cardSpacing = 2.5f;
-    [Tooltip("Décalage vertical local")]
-    public float      yOffset     = -4f;
+    public float cardSpacing = 2.5f;
+    [Tooltip("Espacement vertical entre lignes de cartes")]
+    public float rowSpacing = 3f;
+    [Tooltip("Point (X,Y) centre de la première ligne de la main")]
+    public Vector2 handOrigin = new Vector2(0f, -4f);
 
-    private class CardData { public Sprite front; public string name; public int value; }
-    private List<CardData> allCards    = new List<CardData>();
-    private List<CardData> currentHand = new List<CardData>();
-
+    // **Ne rien toucher en-dessous**
+    private List<GameObject> deckPool    = new List<GameObject>();
+    private List<GameObject> currentHand = new List<GameObject>();
     [HideInInspector] public List<GameObject> cardGOs       = new List<GameObject>();
     [HideInInspector] public List<Vector3>    slotPositions = new List<Vector3>();
 
-    private float prevScale, prevSpacing, prevYOffset;
-
     void Start()
     {
-        if (cardFrontSprites.Length != cardNames.Length || cardNames.Length != cardValues.Length)
-            Debug.LogError("Le tableau cardFrontSprites, cardNames et cardValues doivent être de même longueur !");
-
-        prevScale   = cardScale;
-        prevSpacing = cardSpacing;
-        prevYOffset = yOffset;
-
-        GenerateDeck();
-        DrawHand();
+        BuildDeckPool();
+        DrawInitialHand();
         DisplayHand();
     }
 
-    void Update()
+    /// <summary>1) Constitue et mélange la pioche à partir de deckPrefabs.</summary>
+    private void BuildDeckPool()
     {
-        if (cardScale != prevScale || cardSpacing != prevSpacing || yOffset != prevYOffset)
+        deckPool.Clear();
+        if (deckPrefabs == null || deckPrefabs.Count == 0)
         {
-            prevScale   = cardScale;
-            prevSpacing = cardSpacing;
-            prevYOffset = yOffset;
-            RepositionAll();
+            Debug.LogError("❌ Aucun prefab assigné à deckPrefabs !");
+            return;
         }
-    }
+        var validPrefabs = deckPrefabs.Where(p => p != null).ToList();
+        if (validPrefabs.Count == 0)
+        {
+            Debug.LogError("❌ Toutes les entrées de deckPrefabs sont null !");
+            return;
+        }
 
-    void GenerateDeck()
-    {
-        allCards.Clear();
-
-        List<int> pool = new List<int>();
-        for (int i = 0; i < cardFrontSprites.Length; i++)
-            pool.Add(i);
-
+        // On remplit deckSize fois, tirage avec remise
         for (int i = 0; i < deckSize; i++)
         {
-            if (pool.Count == 0)
-            {
-                pool.Clear();
-                for (int j = 0; j < cardFrontSprites.Length; j++)
-                    pool.Add(j);
-            }
+            int r = Random.Range(0, validPrefabs.Count);
+            deckPool.Add(validPrefabs[r]);
+        }
 
-            int pick = Random.Range(0, pool.Count);
-            int idx  = pool[pick];
-            pool.RemoveAt(pick);
-
-            allCards.Add(new CardData {
-                front = cardFrontSprites[idx],
-                name  = cardNames[idx],
-                value = cardValues[idx]
-            });
+        // Mélange Fisher–Yates
+        for (int i = 0; i < deckPool.Count; i++)
+        {
+            int r = Random.Range(i, deckPool.Count);
+            var tmp = deckPool[i];
+            deckPool[i] = deckPool[r];
+            deckPool[r] = tmp;
         }
     }
 
-    void DrawHand()
+    /// <summary>2) Pioche initiale de initialHandSize cartes.</summary>
+    private void DrawInitialHand()
     {
         currentHand.Clear();
-        var temp = new List<CardData>(allCards);
-        int draw  = Mathf.Min(handSize, temp.Count);
-        for (int i = 0; i < draw; i++)
+        int drawCount = Mathf.Min(initialHandSize, deckPool.Count, maxHandSize);
+        for (int i = 0; i < drawCount; i++)
         {
-            int r = Random.Range(0, temp.Count);
-            currentHand.Add(temp[r]);
-            temp.RemoveAt(r);
+            currentHand.Add(deckPool[0]);
+            deckPool.RemoveAt(0);
         }
     }
 
+    /// <summary>3) Pioche une carte (appelé par TurnManager), sans dépasser maxHandSize.</summary>
+    public void DrawOneCard()
+    {
+        if (deckPool.Count == 0) return;
+        if (currentHand.Count >= maxHandSize)
+        {
+            Debug.LogWarning("Main pleine ! Impossible de piocher davantage.");
+            return;
+        }
+        currentHand.Add(deckPool[0]);
+        deckPool.RemoveAt(0);
+        DisplayHand();
+    }
+
+    /// <summary>4) Retire la carte jouée de la main.</summary>
+    public void RemoveCardAt(int idx)
+    {
+        if (idx >= 0 && idx < currentHand.Count)
+            currentHand.RemoveAt(idx);
+    }
+
+    /// <summary>5) Affiche la main en deux lignes (max 4 cartes par ligne).</summary>
     public void DisplayHand()
     {
-        foreach (Transform c in transform)
-            Destroy(c.gameObject);
+        // a) cleanup des anciennes cartes
+        foreach (Transform t in transform) Destroy(t.gameObject);
         cardGOs.Clear();
         slotPositions.Clear();
 
-        float startX = -(cardSpacing * (currentHand.Count - 1) / 2f);
-        for (int i = 0; i < currentHand.Count; i++)
-            slotPositions.Add(new Vector3(startX + i * cardSpacing, yOffset, 0f));
+        int count = currentHand.Count;
+        int maxPerRow = 4;
+        int rows = Mathf.CeilToInt(count / (float)maxPerRow);
 
-        for (int i = 0; i < currentHand.Count; i++)
+        // b) calcul des positions pour chaque carte
+        for (int i = 0; i < count; i++)
         {
-            var data = currentHand[i];
-            var go   = Instantiate(cardPrefab, transform);
+            int row = i / maxPerRow;
+            int indexInRow = i % maxPerRow;
+            int cardsInThisRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
+            float startX = handOrigin.x - cardSpacing * (cardsInThisRow - 1) / 2f;
+            float x = startX + indexInRow * cardSpacing;
+            float y = handOrigin.y - row * rowSpacing;
+            slotPositions.Add(new Vector3(x, y, 0f));
+        }
+
+        // c) instanciation
+        for (int i = 0; i < count; i++)
+        {
+            var prefab = currentHand[i];
+            if (prefab == null)
+            {
+                Debug.LogError($"Carte n°{i} est null, impossible d’instancier !");
+                continue;
+            }
+            var go = Instantiate(prefab, transform);
             cardGOs.Add(go);
-
             go.transform.localPosition = slotPositions[i];
-            go.transform.localScale    = Vector3.one * cardScale;
 
-            var card = go.GetComponent<Card>();
-            card.frontSprite = data.front;
-            card.backSprite  = cardBackSprite;
-            card.cardName    = data.name;
-            card.cardValue   = data.value;
-            card.infoMessage = $"{data.name} : {data.value}";
-
-            var drag = go.GetComponent<CardDragger>() ?? go.AddComponent<CardDragger>();
-            drag.deckGen = this;
-            if (go.GetComponent<Collider2D>() == null)
-                go.AddComponent<BoxCollider2D>();
+            // on relie le deckGen à chaque CardDragger
+            var drag = go.GetComponent<CardDragger>();
+            if (drag != null)
+                drag.deckGen = this;
         }
     }
 
-    public void SwapCards(int idxA, int idxB)
+    /// <summary>6) Échange deux cartes (drag & drop).</summary>
+    public void SwapCards(int a, int b)
     {
-        var tmpData       = currentHand[idxA];
-        currentHand[idxA] = currentHand[idxB];
-        currentHand[idxB] = tmpData;
-
-        var tmpGO         = cardGOs[idxA];
-        cardGOs[idxA]     = cardGOs[idxB];
-        cardGOs[idxB]     = tmpGO;
-
+        var tmpH = currentHand[a]; currentHand[a] = currentHand[b]; currentHand[b] = tmpH;
+        var tmpG = cardGOs[a];      cardGOs[a]      = cardGOs[b];      cardGOs[b]      = tmpG;
         RepositionAll();
     }
 
+    /// <summary>7) Repositionne la main sans ré-instancier.</summary>
     public void RepositionAll()
     {
         slotPositions.Clear();
         int count = cardGOs.Count;
-        float startX = -(cardSpacing * (count - 1) / 2f);
-        for (int i = 0; i < count; i++)
-            slotPositions.Add(new Vector3(startX + i * cardSpacing, yOffset, 0f));
+        int maxPerRow = 4;
 
         for (int i = 0; i < count; i++)
         {
-            var go = cardGOs[i];
-            go.transform.localScale    = Vector3.one * cardScale;
-            go.transform.localPosition = slotPositions[i];
+            int row = i / maxPerRow;
+            int indexInRow = i % maxPerRow;
+            int cardsInThisRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
+            float startX = handOrigin.x - cardSpacing * (cardsInThisRow - 1) / 2f;
+            float x = startX + indexInRow * cardSpacing;
+            float y = handOrigin.y - row * rowSpacing;
+            slotPositions.Add(new Vector3(x, y, 0f));
         }
+
+        for (int i = 0; i < count; i++)
+            cardGOs[i].transform.localPosition = slotPositions[i];
     }
 }

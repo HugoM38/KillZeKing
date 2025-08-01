@@ -4,61 +4,63 @@ public class TurnManager : MonoBehaviour
 {
     public static TurnManager Instance;
 
+    [Header("Hands")]
+    public FullDeckGenerator playerHand;
+    public FullDeckGenerator enemyHand;
+
+    [Header("Tour actuel")]
     public BaseUnitScript.Team currentPlayer = BaseUnitScript.Team.Player;
 
     [System.Serializable]
-    public class PlayerStats
-    {
-        public int pa = 1;
-        public int pm = 1;
-        public int maxPA = 1;
-        public int maxPM = 1;
-    }
-
+    public class PlayerStats { public int pa=1, pm=1, maxPA=1, maxPM=1; }
     public PlayerStats playerStats = new PlayerStats();
-    public PlayerStats enemyStats = new PlayerStats();
+    public PlayerStats enemyStats  = new PlayerStats();
 
     private int turnCountPlayer = 1;
-    private int turnCountEnemy = 0;
+    private int turnCountEnemy  = 0;
 
-    private void Awake()
+    void Awake()
     {
-        if (Instance == null) Instance = this;
-        else Destroy(gameObject);
+        if (Instance==null) Instance=this; else Destroy(gameObject);
     }
 
-    private void Start(){
+    void Start()
+    {
         UpdateUI();
     }
+
     public PlayerStats CurrentStats =>
-        currentPlayer == BaseUnitScript.Team.Player ? playerStats : enemyStats;
+        currentPlayer==BaseUnitScript.Team.Player ? playerStats : enemyStats;
 
     public void NextTurn()
     {
-        currentPlayer = currentPlayer == BaseUnitScript.Team.Player
+        // 1) Changement de joueur
+        currentPlayer = (currentPlayer==BaseUnitScript.Team.Player)
             ? BaseUnitScript.Team.Enemy
             : BaseUnitScript.Team.Player;
 
-        if (currentPlayer == BaseUnitScript.Team.Player)
-            turnCountPlayer++;
-        else
-            turnCountEnemy++;
+        if (currentPlayer==BaseUnitScript.Team.Player) turnCountPlayer++;
+        else                                           turnCountEnemy++;
 
-        int turnCount = currentPlayer == BaseUnitScript.Team.Player ? turnCountPlayer : turnCountEnemy;
         PlayerStats stats = CurrentStats;
+        int turnCount = (currentPlayer==BaseUnitScript.Team.Player)
+            ? turnCountPlayer : turnCountEnemy;
 
-        if (turnCount > 1)
+        // 2) Gain de PA/PM si >1
+        if (turnCount>1)
         {
-            stats.maxPA = Mathf.Min(stats.maxPA + 1, 5);
-            stats.maxPM = Mathf.Min(stats.maxPM + 1, 5);
+            stats.maxPA = Mathf.Min(stats.maxPA+1,5);
+            stats.maxPM = Mathf.Min(stats.maxPM+1,5);
             RechargerEnergieDesUnites();
         }
-
         stats.pa = stats.maxPA;
         stats.pm = stats.maxPM;
 
-        Debug.Log($"[TurnManager] Tours - Joueur : {turnCountPlayer}, Ennemi : {turnCountEnemy}");
-        Debug.Log($"[TurnManager] {currentPlayer} joue son tour #{turnCount}, maxPA = {stats.maxPA}, maxPM = {stats.maxPM}");
+        // 3) Pioche
+        if (currentPlayer==BaseUnitScript.Team.Player)
+            playerHand.DrawOneCard();
+        else
+            enemyHand.DrawOneCard();
 
         UpdateUI();
     }
@@ -66,40 +68,21 @@ public class TurnManager : MonoBehaviour
     private void RechargerEnergieDesUnites()
     {
         var allUnits = Object.FindObjectsByType<BaseUnitScript>(FindObjectsSortMode.None);
-
-        foreach (var unit in allUnits)
-        {
-            if (unit.team == currentPlayer)
-                unit.SetCurrentEnergy(unit.GetCurrentEnergy() + 1);
-        }
+        foreach (var u in allUnits)
+            if (u.team == currentPlayer)
+                u.SetCurrentEnergy(u.GetCurrentEnergy()+1);
     }
 
-    public bool HasEnoughPA() => CurrentStats.pa > 0;
-    public bool HasEnoughPM() => CurrentStats.pm > 0;
+    public void SpendPA() { CurrentStats.pa = Mathf.Max(0,CurrentStats.pa-1); UpdateUI(); }
+    public void SpendPM() { CurrentStats.pm = Mathf.Max(0,CurrentStats.pm-1); UpdateUI(); }
 
-    public void SpendPA()
+    private void UpdateUI()
     {
-        CurrentStats.pa = Mathf.Max(0, CurrentStats.pa - 1);
-        UpdateUI();
-    }
-
-    public void SpendPM()
-    {
-        CurrentStats.pm = Mathf.Max(0, CurrentStats.pm - 1);
-        UpdateUI();
-    }
-
-    public void UpdateUI()
-    {
-        PlayerStats stats = CurrentStats;
-        PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer, stats.pa, stats.maxPA, stats.pm, stats.maxPM);
-
+        var s = CurrentStats;
+        PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer,s.pa,s.maxPA,s.pm,s.maxPM);
         UIButtons.Instance?.SetButtonsVisibility(
-            showMove: false,
-            showAttack: false,
-            showSpecialAttack: false,
-            showCancel: false,
-            showEndTurn: true
+            showMove:false, showAttack:false, showSpecialAttack:false,
+            showCancel:false, showEndTurn:true
         );
     }
 }
