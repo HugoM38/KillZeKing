@@ -12,7 +12,10 @@ public class Card : MonoBehaviour
     public string infoMessage;     // e.g. "Boule de Feu : inflige 1 dégât à un pion"
 
     [Header("Summon (optional)")]
-    public GameObject summonPrefab; // assigner le prefab de l’unité à invoquer, ou laisser null
+    public GameObject summonPrefab;    // assigner le prefab de l’unité à invoquer, ou laisser null
+
+    [Header("Evolution (optional)")]
+    public GameObject evolutionPrefab; // assigner le prefab de l’évolution, ou laisser null
 
     private SpriteRenderer spriteRenderer;
     private InfoCardDisplay infoDisplay;
@@ -46,12 +49,32 @@ public class Card : MonoBehaviour
 
     void OnMouseDown()
     {
-       if (SpellManager.Instance != null 
-        && SpellManager.Instance.pendingSpellValue == 0)
-    {
-        SpellManager.Instance.ActivateSpell(cardName, cardValue);
-        Destroy(gameObject);
-    }
+        // Gestion des sorts via SpellManager
+        if (SpellManager.Instance != null 
+            && SpellManager.Instance.pendingSpellValue == 0)
+        {
+            SpellManager.Instance.ActivateSpell(cardName, cardValue);
+            Destroy(gameObject);
+            return;
+        }
+
+        // Gestion de l’évolution via EvolutionManager
+        if (EvolutionManager.Instance != null 
+            && evolutionPrefab != null)
+        {
+            EvolutionManager.Instance.ActivateEvolution(evolutionPrefab);
+            Destroy(gameObject);
+            return;
+        }
+
+        // Gestion de l’invocation via SummonManager
+        if (SummonManager.Instance != null 
+            && summonPrefab != null)
+        {
+            SummonManager.Instance.ActivateSummon(summonPrefab);
+            Destroy(gameObject);
+            return;
+        }
     }
 
     /// <summary>Affiche la face avant de la carte.</summary>

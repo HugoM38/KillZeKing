@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
@@ -16,7 +15,7 @@ public class CardDragger : MonoBehaviour
     private int     baseOrder;
     private float   baseAlpha;
 
-    [Tooltip("Alpha de la carte lors du survol ou drag au-dessus d'une case")]
+    [Tooltip("Alpha de la carte lors du survol ou drag au-dessus d'une case")]  
     [Range(0f,1f)] public float hoverAlpha       = 0.5f;
     public float    hoverScaleFactor  = 1.2f;
     public int      hoverSortingOrder = 200;
@@ -70,22 +69,53 @@ public class CardDragger : MonoBehaviour
 
         Tile dropTile = GetTileUnderMouse();
 
-        // 1) Invocation sur case vide
+        // --- 0) ÉVOLUTION sur unité existante ---
+        if (dropTile != null &&
+            dropTile.currentPiece != null &&
+            card.evolutionPrefab != null)
+        {
+            // Récupère les familles
+            var existingUnit = dropTile.currentPiece;
+            var existingFamily = existingUnit.Family;
+
+            if (card.evolutionPrefab.TryGetComponent<BaseUnitScript>(out var evoUnit) &&
+                evoUnit.Family == existingFamily)
+            {
+                // Remplacement de l'unité
+                Destroy(existingUnit.gameObject);
+                var evoGO = Instantiate(
+                    card.evolutionPrefab,
+                    dropTile.transform.position,
+                    Quaternion.identity,
+                    dropTile.transform
+                );
+                if (evoGO.TryGetComponent<BaseUnitScript>(out var newUnit))
+                    dropTile.SetPiece(newUnit);
+
+                TurnManager.Instance.SpendPA();
+                CleanupAndDestroy();
+                return;
+            }
+        }
+
+        // --- 1) Invocation sur case vide ---
         if (dropTile != null && !dropTile.IsOccupied() && card.summonPrefab != null)
         {
             var summoned = Instantiate(
                 card.summonPrefab,
                 dropTile.transform.position,
-                Quaternion.identity
+                Quaternion.identity,
+                dropTile.transform
             );
             if (summoned.TryGetComponent<BaseUnitScript>(out var newUnit))
                 dropTile.SetPiece(newUnit);
 
+            TurnManager.Instance.SpendPA();
             CleanupAndDestroy();
             return;
         }
 
-        // 2) Sort ciblé sur un pion
+        // --- 2) Sort ciblé sur un pion ---
         if (dropTile != null && dropTile.currentPiece != null)
         {
             var unit = dropTile.currentPiece;
@@ -95,38 +125,28 @@ public class CardDragger : MonoBehaviour
                     unit.TakeDamage(card.cardValue);
                     TurnManager.Instance.SpendPA();
                     break;
-
                 case "Soin":
                     unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
                     TurnManager.Instance.SpendPA();
                     break;
-
                 case "Defense Shield":
                     unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
                     TurnManager.Instance.SpendPA();
                     break;
-
                 case "Entrave":
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.Stun, 1);
                     TurnManager.Instance.SpendPA();
                     break;
-
                 case "Bouclier anti-attaque":
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.NoAttack, 1);
                     TurnManager.Instance.SpendPA();
                     break;
-
                 case "Sceau de silence":
-                    // 1) applique le Silence sur cette unité
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.Silence, 1);
-                    // 2) vide son énergie pour bloquer immédiatement le spécial
                     unit.SetCurrentEnergy(0);
-                    // 3) dépense 1 PA
                     TurnManager.Instance.SpendPA();
-                    // 4) re-sélectionne la tuile pour rafraîchir l'UI des boutons
                     SelectionManager.Instance.OnTileSelected(dropTile);
                     break;
-
                 default:
                     Debug.LogWarning($"[CardDragger] Sort inconnu : {card.cardName}");
                     break;
@@ -136,7 +156,7 @@ public class CardDragger : MonoBehaviour
             return;
         }
 
-        // 3) Aucune action valide → replace la carte
+        // --- 3) Aucune action valide → replace la carte ---
         SnapBackToClosestSlot();
     }
 
@@ -162,16 +182,20 @@ public class CardDragger : MonoBehaviour
         var wp3 = GetMouseWorldPos();
         var hits = Physics2D.OverlapPointAll(new Vector2(wp3.x, wp3.y));
         myCollider.enabled = false;
+
         Tile newTile = null;
         foreach (var c in hits)
             if (c.TryGetComponent<Tile>(out newTile)) break;
+
         myCollider.enabled = true;
 
         if (newTile != dragHoverTile)
         {
             if (dragHoverTile != null)
                 SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
+
             dragHoverTile = newTile;
+
             if (dragHoverTile != null)
             {
                 SelectionManager.Instance.OnTileHovered(dragHoverTile);
@@ -210,8 +234,7 @@ public class CardDragger : MonoBehaviour
         if (deckGen != null)
         {
             int idx = deckGen.cardGOs.IndexOf(gameObject);
-            if (idx >= 0)
-                deckGen.RemoveCardAt(idx);
+            if (idx >= 0) deckGen.RemoveCardAt(idx);
         }
         Destroy(gameObject);
     }

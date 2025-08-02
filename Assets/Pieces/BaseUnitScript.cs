@@ -35,6 +35,10 @@ public class BaseUnitScript : MonoBehaviour
     public bool CanAttack  => !statusDurations.ContainsKey(StatusEffect.NoAttack);
     public bool CanSpecial => !statusDurations.ContainsKey(StatusEffect.Silence);
 
+    [Header("Identification de la famille")]
+    public UnitFamily Family;
+
+
     void Awake() { }
 
     void Start()

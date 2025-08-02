@@ -13,4 +13,9 @@ public class MainMenu : MonoBehaviour
         Application.Quit();
         Debug.Log("Quitter le jeu");
     }
+
+      public void OpenDeckBuilder()
+    {
+        SceneManager.LoadScene("DeckBuilder");
+    }
 }
