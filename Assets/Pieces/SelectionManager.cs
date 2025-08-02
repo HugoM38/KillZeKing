@@ -22,7 +22,6 @@ public class SelectionManager : MonoBehaviour
     [HideInInspector]
     public Tile hoveredTile;
 
-
     private void Awake()
     {
         if (Instance == null)
@@ -77,29 +76,45 @@ public class SelectionManager : MonoBehaviour
 
     public void SetAction(PlayerAction action)
     {
+        // 1. Nettoyage des anciennes surbrillances
+        ClearTemporaryHighlights();
+        if (tileOptions != null)
+        {
+            foreach (var t in tileOptions)
+                t.SetHighlightActive(false);
+            tileOptions = null;
+        }
+
+        // 2. Mise à jour de l'action
         currentAction = action;
         targetTile = null;
         Debug.Log($"Action courante définie : {currentAction}");
 
+        // 3. Remplissage et surbrillance selon l'action
         if (selectedTile != null && selectedTile.currentPiece != null)
         {
             var piece = selectedTile.currentPiece;
-
             switch (currentAction)
             {
                 case PlayerAction.None:
                     ClearSelection();
                     break;
+
                 case PlayerAction.Move:
                     tileOptions = piece.ShowMoveOptions();
+                    ShowAbilityTargets();
                     UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
+
                 case PlayerAction.Attack:
                     tileOptions = piece.ShowAttackOptions();
+                    ShowAbilityTargets();
                     UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
+
                 case PlayerAction.SpecialAttack:
                     tileOptions = piece.ShowSpecialAttackOptions();
+                    ShowAbilityTargets();
                     UIButtons.Instance.SetButtonsVisibility(false, false, false, true, true);
                     break;
             }
@@ -131,10 +146,10 @@ public class SelectionManager : MonoBehaviour
                 break;
             case PlayerAction.SpecialAttack:
                 if (tileOptions == null || !tileOptions.Contains(targetTile))
-                    {
-                        Debug.LogWarning("[SelectionManager] SpecialAttack échoué : la case ciblée n'est pas valide.");
-                        return;
-                    }
+                {
+                    Debug.LogWarning("[SelectionManager] SpecialAttack échoué : la case ciblée n'est pas valide.");
+                    return;
+                }
                 piece.SpecialAttack(targetTile.currentPiece);
                 ClearTemporaryHighlights();
                 ClearSelection();
@@ -230,6 +245,11 @@ public class SelectionManager : MonoBehaviour
                 ShowAbilityTargets();
             }
         }
+        else if (currentAction == PlayerAction.Attack)
+        {
+            ShowAbilityTargets();
+        }
+
         if (tile.currentPiece != null)
             PieceInfoUI.instance.ShowTargetInfo(tile.currentPiece);
         else
@@ -239,7 +259,7 @@ public class SelectionManager : MonoBehaviour
     public void OnTileUnhovered(Tile tile)
     {
         if (hoveredTile == tile) hoveredTile = null;
-        if (currentAction == PlayerAction.SpecialAttack)
+        if (currentAction == PlayerAction.SpecialAttack || currentAction == PlayerAction.Attack)
         {
             ShowAbilityTargets();
         }
@@ -265,6 +285,7 @@ public class SelectionManager : MonoBehaviour
             foreach (Tile tile in tileOptions)
             {
                 tile.SetHighlight(Color.yellow);
+                tile.SetHighlightActive(true);
             }
         }
     }

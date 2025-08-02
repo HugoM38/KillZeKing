@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider2D))]
@@ -6,17 +7,16 @@ public class CardDragger : MonoBehaviour
     [HideInInspector] public FullDeckGenerator deckGen;
 
     private Vector3        offset;
-    private bool           isDragging     = false;
+    private bool           isDragging = false;
     private SpriteRenderer sr;
     private Collider2D     myCollider;
     private Tile           dragHoverTile;
 
-    // Hover effect
     private Vector3 baseScale;
     private int     baseOrder;
     private float   baseAlpha;
 
-    [Tooltip("Alpha de la carte lors du survol ou drag au-dessus d'une case")]    
+    [Tooltip("Alpha de la carte lors du survol ou drag au-dessus d'une case")]
     [Range(0f,1f)] public float hoverAlpha       = 0.5f;
     public float    hoverScaleFactor  = 1.2f;
     public int      hoverSortingOrder = 200;
@@ -27,6 +27,8 @@ public class CardDragger : MonoBehaviour
         myCollider = GetComponent<Collider2D>();
         baseOrder  = sr.sortingOrder;
         baseAlpha  = sr.color.a;
+        if (deckGen == null)
+            deckGen = FindObjectOfType<FullDeckGenerator>();
     }
 
     void OnMouseDown()
@@ -47,8 +49,8 @@ public class CardDragger : MonoBehaviour
 
     void OnMouseUp()
     {
-        isDragging      = false;
-        sr.sortingOrder = baseOrder;
+        isDragging           = false;
+        sr.sortingOrder      = baseOrder;
         transform.localScale = baseScale;
         ResetTransparency();
 
@@ -58,15 +60,24 @@ public class CardDragger : MonoBehaviour
             dragHoverTile = null;
         }
 
+        var card = GetComponent<Card>();
+        if (card == null)
+        {
+            Debug.LogError("[CardDragger] Pas de composant Card sur " + name);
+            SnapBackToClosestSlot();
+            return;
+        }
+
         Tile dropTile = GetTileUnderMouse();
-        var card      = GetComponent<Card>();
 
         // 1) Invocation sur case vide
         if (dropTile != null && !dropTile.IsOccupied() && card.summonPrefab != null)
         {
-            var summoned = Instantiate(card.summonPrefab,
-                                       dropTile.transform.position,
-                                       Quaternion.identity);
+            var summoned = Instantiate(
+                card.summonPrefab,
+                dropTile.transform.position,
+                Quaternion.identity
+            );
             if (summoned.TryGetComponent<BaseUnitScript>(out var newUnit))
                 dropTile.SetPiece(newUnit);
 
@@ -74,22 +85,58 @@ public class CardDragger : MonoBehaviour
             return;
         }
 
-        // 2) Sort sur un pion
+        // 2) Sort ciblé sur un pion
         if (dropTile != null && dropTile.currentPiece != null)
         {
             var unit = dropTile.currentPiece;
             switch (card.cardName)
             {
-                case "Boule de Feu":     unit.TakeDamage(card.cardValue); break;
-                case "Soin":             unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue); break;
-                case "Defense Shield":   unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue); break;
-                default: Debug.LogWarning($"Sort inconnu : {card.cardName}"); break;
+                case "Boule de Feu":
+                    unit.TakeDamage(card.cardValue);
+                    TurnManager.Instance.SpendPA();
+                    break;
+
+                case "Soin":
+                    unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
+                    TurnManager.Instance.SpendPA();
+                    break;
+
+                case "Defense Shield":
+                    unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
+                    TurnManager.Instance.SpendPA();
+                    break;
+
+                case "Entrave":
+                    unit.ApplyStatus(BaseUnitScript.StatusEffect.Stun, 1);
+                    TurnManager.Instance.SpendPA();
+                    break;
+
+                case "Bouclier anti-attaque":
+                    unit.ApplyStatus(BaseUnitScript.StatusEffect.NoAttack, 1);
+                    TurnManager.Instance.SpendPA();
+                    break;
+
+                case "Sceau de silence":
+                    // 1) applique le Silence sur cette unité
+                    unit.ApplyStatus(BaseUnitScript.StatusEffect.Silence, 1);
+                    // 2) vide son énergie pour bloquer immédiatement le spécial
+                    unit.SetCurrentEnergy(0);
+                    // 3) dépense 1 PA
+                    TurnManager.Instance.SpendPA();
+                    // 4) re-sélectionne la tuile pour rafraîchir l'UI des boutons
+                    SelectionManager.Instance.OnTileSelected(dropTile);
+                    break;
+
+                default:
+                    Debug.LogWarning($"[CardDragger] Sort inconnu : {card.cardName}");
+                    break;
             }
+
             CleanupAndDestroy();
             return;
         }
 
-        // 3) Sinon, repositionnement dans la main
+        // 3) Aucune action valide → replace la carte
         SnapBackToClosestSlot();
     }
 
@@ -99,6 +146,7 @@ public class CardDragger : MonoBehaviour
         baseScale            = transform.localScale;
         transform.localScale = baseScale * hoverScaleFactor;
         sr.sortingOrder      = hoverSortingOrder;
+        ApplyTransparency(hoverAlpha);
     }
 
     void OnMouseExit()
@@ -106,52 +154,39 @@ public class CardDragger : MonoBehaviour
         if (isDragging) return;
         transform.localScale = baseScale;
         sr.sortingOrder      = baseOrder;
+        ResetTransparency();
     }
 
     private void DetectHoverTile()
     {
         var wp3 = GetMouseWorldPos();
-        var wp2 = new Vector2(wp3.x, wp3.y);
-
+        var hits = Physics2D.OverlapPointAll(new Vector2(wp3.x, wp3.y));
         myCollider.enabled = false;
-        var hits = Physics2D.OverlapPointAll(wp2);
-        myCollider.enabled = true;
-
         Tile newTile = null;
         foreach (var c in hits)
-            if (c.TryGetComponent<Tile>(out newTile))
-                break;
+            if (c.TryGetComponent<Tile>(out newTile)) break;
+        myCollider.enabled = true;
 
         if (newTile != dragHoverTile)
         {
             if (dragHoverTile != null)
                 SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
-
             dragHoverTile = newTile;
-
             if (dragHoverTile != null)
             {
                 SelectionManager.Instance.OnTileHovered(dragHoverTile);
-                // Applique transparence seulement en drag au-dessus d'une case
                 ApplyTransparency(hoverAlpha);
             }
-            else
-            {
-                // Remet l'opacité normale si plus sur aucune case
-                ResetTransparency();
-            }
+            else ResetTransparency();
         }
     }
 
     private Tile GetTileUnderMouse()
     {
         var wp3 = GetMouseWorldPos();
-        var wp2 = new Vector2(wp3.x, wp3.y);
-
         myCollider.enabled = false;
-        var hits = Physics2D.OverlapPointAll(wp2);
+        var hits = Physics2D.OverlapPointAll(new Vector2(wp3.x, wp3.y));
         myCollider.enabled = true;
-
         foreach (var c in hits)
             if (c.TryGetComponent<Tile>(out var t))
                 return t;
@@ -172,18 +207,19 @@ public class CardDragger : MonoBehaviour
 
     private void CleanupAndDestroy()
     {
-        int idx = deckGen.cardGOs.IndexOf(gameObject);
-        if (idx >= 0)
+        if (deckGen != null)
         {
-            deckGen.RemoveCardAt(idx);
-            deckGen.cardGOs.RemoveAt(idx);
+            int idx = deckGen.cardGOs.IndexOf(gameObject);
+            if (idx >= 0)
+                deckGen.RemoveCardAt(idx);
         }
         Destroy(gameObject);
-        deckGen.RepositionAll();
     }
 
     private void SnapBackToClosestSlot()
     {
+        if (deckGen == null) return;
+
         int originalIndex = deckGen.cardGOs.IndexOf(gameObject);
         float bestDist    = float.MaxValue;
         int   bestIdx     = originalIndex;

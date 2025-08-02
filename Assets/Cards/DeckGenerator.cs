@@ -118,12 +118,12 @@ public class FullDeckGenerator : MonoBehaviour
         // b) calcul des positions
         for (int i = 0; i < count; i++)
         {
-            int row          = i / maxPerRow;
-            int indexInRow   = i % maxPerRow;
-            int cardsInRow   = Mathf.Min(maxPerRow, count - row * maxPerRow);
-            float startX     = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
-            float x          = startX + indexInRow * cardSpacing;
-            float y          = handOrigin.y - row * rowSpacing;
+            int row        = i / maxPerRow;
+            int indexInRow = i % maxPerRow;
+            int cardsInRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
+            float startX   = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
+            float x        = startX + indexInRow * cardSpacing;
+            float y        = handOrigin.y - row * rowSpacing;
             slotPositions.Add(new Vector3(x, y, 0f));
         }
 
@@ -141,7 +141,7 @@ public class FullDeckGenerator : MonoBehaviour
             go.transform.localPosition = slotPositions[i];
             cardGOs.Add(go);
 
-            // **HERE** : on cache seulement visuellement si hideHand activé
+            // **C’EST ICI** qu’on cache visuellement la main ennemie
             go.SetActive(!hideHand);
 
             // on relie le deckGen à chaque CardDragger

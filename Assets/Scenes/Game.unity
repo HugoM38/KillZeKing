@@ -2709,9 +2709,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   deckPrefabs:
-  - {fileID: 1051495807850602242, guid: e3d4e3dd6dfaa42e9a0b7e74128ad5af, type: 3}
-  - {fileID: 1051495807850602242, guid: 141f516745d024360a336f08b31b65f0, type: 3}
-  - {fileID: 1051495807850602242, guid: f74a9a2c81fc0414e9a882f06ff16181, type: 3}
+  - {fileID: 1051495807850602242, guid: ea042b448f401466a814fd7eba2f3ced, type: 3}
   deckSize: 20
   initialHandSize: 3
   maxHandSize: 8
