@@ -17,9 +17,7 @@ public class EspionScript : BaseUnitScript
         List<Tile> enemyTiles = FilterTiles(tilesInRange, originTile, TileFilter.Enemy);
 
         foreach (Tile tile in enemyTiles)
-        {
             tile.SetHighlight(Color.yellow);
-        }
 
         return enemyTiles;
     }
@@ -64,8 +62,18 @@ public class EspionScript : BaseUnitScript
             SelectionManager.Instance.targetTile.SetPiece(null);
         }
 
-        // TODO: Défausser la main adverse, mélanger le deck, piocher 3 cartes
-        Debug.Log("[Espion] TODO: L’adversaire remet sa main dans son deck, le mélange, puis pioche 3 cartes.");
+        // Effet de l'espion : défausser la main adverse et piocher 3 cartes
+        // Détermination de la main adverse
+        BaseUnitScript.Team opponent = (team == BaseUnitScript.Team.Player)
+            ? BaseUnitScript.Team.Enemy
+            : BaseUnitScript.Team.Player;
+        FullDeckGenerator opponentHand = (opponent == BaseUnitScript.Team.Player)
+            ? TurnManager.Instance.playerHand
+            : TurnManager.Instance.enemyHand;
+
+        opponentHand.DiscardHandToDeck();
+        opponentHand.ShuffleDeck();
+        opponentHand.DrawCards(3);
 
         TurnManager.Instance.SpendPA();
         SetCurrentEnergy(0);

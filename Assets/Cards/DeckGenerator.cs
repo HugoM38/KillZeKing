@@ -1,10 +1,10 @@
-// FullDeckGenerator.cs
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
 /// <summary>
-/// Gère la génération du deck, la pioche, et l'affichage de la main.
+/// Gère la génération du deck, la pioche, l'affichage de la main,
+/// et fournit des opérations de défausse/repioche pour les effets de carte.
 /// Tirage sans remise, minimum 15 cartes, et reshuffle aléatoire quand le deck est épuisé.
 /// </summary>
 public class FullDeckGenerator : MonoBehaviour
@@ -55,8 +55,8 @@ public class FullDeckGenerator : MonoBehaviour
     }
 
     /// <summary>
-    /// 1) Constitue et mélange la pioche à partir de deckPrefabs (sans remise).
-    ///    Assure un minimum de MinDeckSize cartes.
+    /// Constitue et mélange la pioche à partir de deckPrefabs (sans remise).
+    /// Assure un minimum de MinDeckSize cartes.
     /// </summary>
     private void BuildDeckPool()
     {
@@ -67,7 +67,6 @@ public class FullDeckGenerator : MonoBehaviour
             return;
         }
 
-        // Liste valide
         var source = deckPrefabs.Where(p => p != null).ToList();
         if (source.Count == 0)
         {
@@ -93,70 +92,55 @@ public class FullDeckGenerator : MonoBehaviour
         for (int i = 0; i < deckPool.Count; i++)
         {
             int r = Random.Range(i, deckPool.Count);
-            var tmp = deckPool[i];
-            deckPool[i] = deckPool[r];
-            deckPool[r] = tmp;
+            var tmp = deckPool[i]; deckPool[i] = deckPool[r]; deckPool[r] = tmp;
         }
     }
 
-    /// <summary>2) Pioche initiale.</summary>
+    /// <summary>Pioche initiale.</summary>
     private void DrawInitialHand()
     {
         currentHand.Clear();
         int drawCount = Mathf.Min(initialHandSize, deckPool.Count, maxHandSize);
         for (int i = 0; i < drawCount; i++)
         {
-            currentHand.Add(deckPool[0]);
-            deckPool.RemoveAt(0);
+            currentHand.Add(deckPool[0]); deckPool.RemoveAt(0);
         }
     }
 
     /// <summary>
-    /// 3) Pioche une carte (appelé par TurnManager).
-    ///    Reshuffle automatique si le deck est épuisé.
+    /// Pioche une carte (appelé par TurnManager).
+    /// Reshuffle automatique si le deck est épuisé.
     /// </summary>
     public void DrawOneCard()
     {
-        if (currentHand.Count >= maxHandSize)
-            return;
-
+        if (currentHand.Count >= maxHandSize) return;
         if (deckPool.Count == 0)
         {
             Debug.Log("🔄 Deck épuisé : reshuffle automatique");
             BuildDeckPool();
         }
-
-        currentHand.Add(deckPool[0]);
-        deckPool.RemoveAt(0);
+        currentHand.Add(deckPool[0]); deckPool.RemoveAt(0);
         DisplayHand();
     }
 
-    /// <summary>4) Retire la carte jouée de la main.</summary>
+    /// <summary>Retire la carte jouée de la main.</summary>
     public void RemoveCardAt(int idx)
     {
-        if (idx < 0 || idx >= currentHand.Count)
-            return;
-
+        if (idx < 0 || idx >= currentHand.Count) return;
         currentHand.RemoveAt(idx);
         DisplayHand();
     }
 
-    /// <summary>5) (Ré)Affiche la main en deux lignes (max 4 cartes par ligne).</summary>
+    /// <summary>Affiche la main en deux lignes (max 4 cartes par ligne).</summary>
     public void DisplayHand()
     {
-        // a) cleanup
-        foreach (Transform t in transform)
-            Destroy(t.gameObject);
+        foreach (Transform t in transform) Destroy(t.gameObject);
         cardGOs.Clear(); slotPositions.Clear();
 
-        int count = currentHand.Count;
-        int maxPerRow = 4;
-
-        // b) positions
+        int count = currentHand.Count, maxPerRow = 4;
         for (int i = 0; i < count; i++)
         {
-            int row = i / maxPerRow;
-            int idxRow = i % maxPerRow;
+            int row = i / maxPerRow, idxRow = i % maxPerRow;
             int cardsInRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
             float startX = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
             float x = startX + idxRow * cardSpacing;
@@ -164,57 +148,83 @@ public class FullDeckGenerator : MonoBehaviour
             slotPositions.Add(new Vector3(x, y, 0f));
         }
 
-        // c) instantiation & visibilité
         for (int i = 0; i < count; i++)
         {
             var prefab = currentHand[i];
             if (prefab == null)
             {
-                Debug.LogError($"Carte n°{i} est null !");
-                continue;
+                Debug.LogError($"Carte n°{i} est null !"); continue;
             }
             var go = Instantiate(prefab, transform);
             go.transform.localPosition = slotPositions[i];
             cardGOs.Add(go);
             go.SetActive(!hideHand);
-            var drag = go.GetComponent<CardDragger>();
-            if (drag != null) drag.deckGen = this;
+            var drag = go.GetComponent<CardDragger>(); if (drag != null) drag.deckGen = this;
         }
     }
 
-    /// <summary>6) Échange deux cartes (drag & drop).</summary>
+    /// <summary>Échange deux cartes (drag & drop).</summary>
     public void SwapCards(int a, int b)
     {
-        if (a < 0 || b < 0 || a >= currentHand.Count || b >= currentHand.Count)
-            return;
-        // échange données
-        var tmpH = currentHand[a];
-        currentHand[a] = currentHand[b];
-        currentHand[b] = tmpH;
-        // échange visuels
-        var tmpG = cardGOs[a];
-        cardGOs[a] = cardGOs[b];
-        cardGOs[b] = tmpG;
+        if (a < 0 || b < 0 || a >= currentHand.Count || b >= currentHand.Count) return;
+        (currentHand[a], currentHand[b]) = (currentHand[b], currentHand[a]);
+        (cardGOs[a], cardGOs[b]) = (cardGOs[b], cardGOs[a]);
         RepositionAll();
     }
 
-    /// <summary>7) Repositionne la main sans ré-instancier.</summary>
+    /// <summary>Repositionne la main sans ré-instancier.</summary>
     public void RepositionAll()
     {
-        slotPositions.Clear();
-        int count = cardGOs.Count;
-        int maxPerRow = 4;
+        slotPositions.Clear(); int count = cardGOs.Count, maxPerRow = 4;
         for (int i = 0; i < count; i++)
         {
-            int row = i / maxPerRow;
-            int idxRow = i % maxPerRow;
+            int row = i / maxPerRow, idxRow = i % maxPerRow;
             int cardsInRow = Mathf.Min(maxPerRow, count - row * maxPerRow);
             float startX = handOrigin.x - cardSpacing * (cardsInRow - 1) / 2f;
             float x = startX + idxRow * cardSpacing;
             float y = handOrigin.y - row * rowSpacing;
             slotPositions.Add(new Vector3(x, y, 0f));
         }
+        for (int i = 0; i < count; i++) cardGOs[i].transform.localPosition = slotPositions[i];
+    }
+
+    // ------------------
+    // Méthodes ajoutées
+    // ------------------
+
+    /// <summary>
+    /// Défausse toutes les cartes de la main dans le deck (mélange ensuite possible).
+    /// </summary>
+    public void DiscardHandToDeck()
+    {
+        // Remet les cartes de currentHand dans deckPool
+        foreach (var cardGo in currentHand)
+        {
+            deckPool.Add(cardGo);
+        }
+        currentHand.Clear();
+        // Rafraîchir visuel
+        DisplayHand();
+    }
+
+    /// <summary>
+    /// Mélange aléatoirement le deckPool avec Fisher–Yates.
+    /// </summary>
+    public void ShuffleDeck()
+    {
+        for (int i = 0; i < deckPool.Count; i++)
+        {
+            int r = Random.Range(i, deckPool.Count);
+            var tmp = deckPool[i]; deckPool[i] = deckPool[r]; deckPool[r] = tmp;
+        }
+    }
+
+    /// <summary>
+    /// Pioche plusieurs cartes consécutivement.
+    /// </summary>
+    public void DrawCards(int count)
+    {
         for (int i = 0; i < count; i++)
-            cardGOs[i].transform.localPosition = slotPositions[i];
+            DrawOneCard();
     }
 }

@@ -104,6 +104,6 @@ public class DeckBuilderUI : MonoBehaviour
             for (int i = 0; i < kv.Value; i++)
                 sel.Add(kv.Key);
 
-        SceneManager.LoadScene("MainMenu");
+        SceneManager.LoadScene("CharacterSelection");
     }
 }
