@@ -5,38 +5,41 @@ public class CardDragger : MonoBehaviour
 {
     [HideInInspector] public FullDeckGenerator deckGen;
 
-    private Vector3        offset;
-    private bool           isDragging = false;
+    private Vector3 offset;
+    private bool isDragging = false;
     private SpriteRenderer sr;
-    private Collider2D     myCollider;
-    private Tile           dragHoverTile;
+    private Collider2D myCollider;
+    private Tile dragHoverTile;
 
-    private Vector3 baseScale;
-    private int     baseOrder;
-    private float   baseAlpha;
+    private Vector3 originalScale;
+    private Vector3 hoverScale;
+    private int baseOrder;
+    private float baseAlpha;
 
-    [Tooltip("Alpha de la carte lors du survol ou drag au-dessus d'une case")]  
-    [Range(0f,1f)] public float hoverAlpha       = 0.5f;
-    public float    hoverScaleFactor  = 1.2f;
-    public int      hoverSortingOrder = 200;
+    [Tooltip("Alpha de la carte lors du survol ou du drag")]
+    [Range(0f,1f)] public float hoverAlpha = 0.5f;
+    public float hoverScaleFactor = 1.2f;
+    public int hoverSortingOrder = 200;
 
     void Awake()
     {
-        sr         = GetComponent<SpriteRenderer>();
+        sr = GetComponent<SpriteRenderer>();
         myCollider = GetComponent<Collider2D>();
-        baseOrder  = sr.sortingOrder;
-        baseAlpha  = sr.color.a;
+        baseOrder = sr.sortingOrder;
+        baseAlpha = sr.color.a;
+        originalScale = transform.localScale;
+        hoverScale = originalScale * hoverScaleFactor;
+
         if (deckGen == null)
             deckGen = FindObjectOfType<FullDeckGenerator>();
     }
 
     void OnMouseDown()
     {
-        isDragging      = true;
-        offset          = transform.position - GetMouseWorldPos();
+        isDragging = true;
+        offset = transform.position - GetMouseWorldPos();
         sr.sortingOrder = hoverSortingOrder;
-        baseScale       = transform.localScale;
-        transform.localScale = baseScale * hoverScaleFactor;
+        transform.localScale = hoverScale;
     }
 
     void Update()
@@ -48,9 +51,9 @@ public class CardDragger : MonoBehaviour
 
     void OnMouseUp()
     {
-        isDragging           = false;
-        sr.sortingOrder      = baseOrder;
-        transform.localScale = baseScale;
+        isDragging = false;
+        sr.sortingOrder = baseOrder;
+        transform.localScale = originalScale;
         ResetTransparency();
 
         if (dragHoverTile != null)
@@ -59,36 +62,32 @@ public class CardDragger : MonoBehaviour
             dragHoverTile = null;
         }
 
+        // Seul le joueur peut utiliser la carte
+        if (TurnManager.Instance.currentPlayer != BaseUnitScript.Team.Player)
+        {
+            SnapBackToClosestSlot();
+            return;
+        }
+
         var card = GetComponent<Card>();
         if (card == null)
         {
-            Debug.LogError("[CardDragger] Pas de composant Card sur " + name);
+            Debug.LogError("[CardDragger] Aucun composant Card trouvé.");
             SnapBackToClosestSlot();
             return;
         }
 
         Tile dropTile = GetTileUnderMouse();
 
-        // --- 0) ÉVOLUTION sur unité existante ---
-        if (dropTile != null &&
-            dropTile.currentPiece != null &&
-            card.evolutionPrefab != null)
+        // 1) Évolution
+        if (dropTile != null && dropTile.currentPiece != null && card.evolutionPrefab != null)
         {
-            // Récupère les familles
-            var existingUnit = dropTile.currentPiece;
-            var existingFamily = existingUnit.Family;
-
-            if (card.evolutionPrefab.TryGetComponent<BaseUnitScript>(out var evoUnit) &&
-                evoUnit.Family == existingFamily)
+            var existing = dropTile.currentPiece;
+            var evoUnit = card.evolutionPrefab.GetComponent<BaseUnitScript>();
+            if (evoUnit != null && existing.Family == evoUnit.Family && existing.team == TurnManager.Instance.currentPlayer)
             {
-                // Remplacement de l'unité
-                Destroy(existingUnit.gameObject);
-                var evoGO = Instantiate(
-                    card.evolutionPrefab,
-                    dropTile.transform.position,
-                    Quaternion.identity,
-                    dropTile.transform
-                );
+                Destroy(existing.gameObject);
+                var evoGO = Instantiate(card.evolutionPrefab, dropTile.transform.position, Quaternion.identity, dropTile.transform);
                 if (evoGO.TryGetComponent<BaseUnitScript>(out var newUnit))
                     dropTile.SetPiece(newUnit);
 
@@ -96,131 +95,106 @@ public class CardDragger : MonoBehaviour
                 CleanupAndDestroy();
                 return;
             }
-        }
-
-        // --- 1) Invocation sur case vide ---
-        if (dropTile != null && !dropTile.IsOccupied() && card.summonPrefab != null)
-        {
-            var summoned = Instantiate(
-                card.summonPrefab,
-                dropTile.transform.position,
-                Quaternion.identity,
-                dropTile.transform
-            );
-            if (summoned.TryGetComponent<BaseUnitScript>(out var newUnit))
-                dropTile.SetPiece(newUnit);
-
-            TurnManager.Instance.SpendPA();
-            CleanupAndDestroy();
+            SnapBackToClosestSlot();
             return;
         }
 
-        // --- 2) Sort ciblé sur un pion ---
+        // 2) Invocation
+        if (dropTile != null && !dropTile.IsOccupied() && card.summonPrefab != null)
+        {
+            bool isPlayer = TurnManager.Instance.currentPlayer == BaseUnitScript.Team.Player;
+            int y = dropTile.coordinates.y;
+            int h = BoardGenerator.Instance.height;
+            int maxPlayerRow = h/2 - 1;
+            int minEnemyRow = h - h/2;
+            bool valid = isPlayer ? (y <= maxPlayerRow) : (y >= minEnemyRow);
+            if (valid)
+            {
+                var summGO = Instantiate(card.summonPrefab, dropTile.transform.position, Quaternion.identity, dropTile.transform);
+                if (summGO.TryGetComponent<BaseUnitScript>(out var newUnit))
+                    dropTile.SetPiece(newUnit);
+
+                TurnManager.Instance.SpendPA();
+                CleanupAndDestroy();
+                return;
+            }
+            SnapBackToClosestSlot();
+            return;
+        }
+
+        // 3) Sort ciblé
         if (dropTile != null && dropTile.currentPiece != null)
         {
             var unit = dropTile.currentPiece;
             switch (card.cardName)
             {
-                case "Boule de Feu":
-                    unit.TakeDamage(card.cardValue);
-                    TurnManager.Instance.SpendPA();
-                    break;
-                case "Soin":
-                    unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
-                    TurnManager.Instance.SpendPA();
-                    break;
-                case "Defense Shield":
-                    unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
-                    TurnManager.Instance.SpendPA();
-                    break;
-                case "Entrave":
-                    unit.ApplyStatus(BaseUnitScript.StatusEffect.Stun, 1);
-                    TurnManager.Instance.SpendPA();
-                    break;
-                case "Bouclier anti-attaque":
-                    unit.ApplyStatus(BaseUnitScript.StatusEffect.NoAttack, 1);
-                    TurnManager.Instance.SpendPA();
-                    break;
-                case "Sceau de silence":
-                    unit.ApplyStatus(BaseUnitScript.StatusEffect.Silence, 1);
-                    unit.SetCurrentEnergy(0);
-                    TurnManager.Instance.SpendPA();
-                    SelectionManager.Instance.OnTileSelected(dropTile);
-                    break;
-                default:
-                    Debug.LogWarning($"[CardDragger] Sort inconnu : {card.cardName}");
-                    break;
+                case "Boule de Feu": unit.TakeDamage(card.cardValue); break;
+                case "Soin": unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue); break;
+                case "Defense Shield": unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue); break;
+                case "Entrave": unit.ApplyStatus(BaseUnitScript.StatusEffect.Stun,1); break;
+                case "Bouclier anti-attaque": unit.ApplyStatus(BaseUnitScript.StatusEffect.NoAttack,1); break;
+                case "Sceau de silence": unit.ApplyStatus(BaseUnitScript.StatusEffect.Silence,1); unit.SetCurrentEnergy(0); break;
+                default: Debug.LogWarning($"Sort inconnu: {card.cardName}"); break;
             }
-
+            TurnManager.Instance.SpendPA();
             CleanupAndDestroy();
             return;
         }
 
-        // --- 3) Aucune action valide → replace la carte ---
+        // Échec
         SnapBackToClosestSlot();
     }
 
     void OnMouseEnter()
     {
         if (isDragging) return;
-        baseScale            = transform.localScale;
-        transform.localScale = baseScale * hoverScaleFactor;
-        sr.sortingOrder      = hoverSortingOrder;
+        transform.localScale = hoverScale;
+        sr.sortingOrder = hoverSortingOrder;
         ApplyTransparency(hoverAlpha);
     }
 
     void OnMouseExit()
     {
         if (isDragging) return;
-        transform.localScale = baseScale;
-        sr.sortingOrder      = baseOrder;
+        transform.localScale = originalScale;
+        sr.sortingOrder = baseOrder;
         ResetTransparency();
     }
 
     private void DetectHoverTile()
     {
-        var wp3 = GetMouseWorldPos();
-        var hits = Physics2D.OverlapPointAll(new Vector2(wp3.x, wp3.y));
+        var wp = GetMouseWorldPos();
+        var hits = Physics2D.OverlapPointAll(wp);
         myCollider.enabled = false;
-
         Tile newTile = null;
         foreach (var c in hits)
             if (c.TryGetComponent<Tile>(out newTile)) break;
-
         myCollider.enabled = true;
 
         if (newTile != dragHoverTile)
         {
-            if (dragHoverTile != null)
-                SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
-
+            if (dragHoverTile != null) SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
             dragHoverTile = newTile;
-
-            if (dragHoverTile != null)
-            {
-                SelectionManager.Instance.OnTileHovered(dragHoverTile);
-                ApplyTransparency(hoverAlpha);
-            }
+            if (dragHoverTile != null) { SelectionManager.Instance.OnTileHovered(dragHoverTile); ApplyTransparency(hoverAlpha); }
             else ResetTransparency();
         }
     }
 
     private Tile GetTileUnderMouse()
     {
-        var wp3 = GetMouseWorldPos();
+        var wp = GetMouseWorldPos();
         myCollider.enabled = false;
-        var hits = Physics2D.OverlapPointAll(new Vector2(wp3.x, wp3.y));
+        var hits = Physics2D.OverlapPointAll(wp);
         myCollider.enabled = true;
         foreach (var c in hits)
-            if (c.TryGetComponent<Tile>(out var t))
-                return t;
+            if (c.TryGetComponent<Tile>(out var t)) return t;
         return null;
     }
 
-    private void ApplyTransparency(float alpha)
+    private void ApplyTransparency(float a)
     {
         var c = sr.color;
-        sr.color = new Color(c.r, c.g, c.b, alpha);
+        sr.color = new Color(c.r, c.g, c.b, a);
     }
 
     private void ResetTransparency()
@@ -242,35 +216,23 @@ public class CardDragger : MonoBehaviour
     private void SnapBackToClosestSlot()
     {
         if (deckGen == null) return;
-
-        int originalIndex = deckGen.cardGOs.IndexOf(gameObject);
-        float bestDist    = float.MaxValue;
-        int   bestIdx     = originalIndex;
-        Vector3 localPos  = transform.localPosition;
-
+        int original = deckGen.cardGOs.IndexOf(gameObject);
+        float best = float.MaxValue;
+        int bestIdx = original;
+        Vector3 local = transform.localPosition;
         for (int i = 0; i < deckGen.slotPositions.Count; i++)
         {
-            float d = Vector2.Distance(
-                new Vector2(localPos.x, localPos.y),
-                new Vector2(deckGen.slotPositions[i].x, deckGen.slotPositions[i].y)
-            );
-            if (d < bestDist)
-            {
-                bestDist = d;
-                bestIdx  = i;
-            }
+            float d = Vector2.Distance(local, deckGen.slotPositions[i]);
+            if (d < best) { best = d; bestIdx = i; }
         }
-
-        if (bestIdx != originalIndex)
-            deckGen.SwapCards(originalIndex, bestIdx);
-        else
-            deckGen.RepositionAll();
+        if (bestIdx != original) deckGen.SwapCards(original, bestIdx);
+        else deckGen.RepositionAll();
     }
 
     private Vector3 GetMouseWorldPos()
     {
         var mp = Input.mousePosition;
-        mp.z    = -Camera.main.transform.position.z;
+        mp.z = -Camera.main.transform.position.z;
         return Camera.main.ScreenToWorldPoint(mp);
     }
 }

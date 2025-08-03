@@ -2153,6 +2153,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1686036559}
   - component: {fileID: 1686036558}
+  - component: {fileID: 1686036560}
   m_Layer: 0
   m_Name: TurnManager
   m_TagString: Untagged
@@ -2200,6 +2201,21 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1686036560
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1686036557}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 62c303063210d4bab8737a1d5d98bfe7, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  pendingSpellName: 
+  pendingSpellValue: 0
+  pendingSpellOwner: 0
 --- !u!1 &1701703857
 GameObject:
   m_ObjectHideFlags: 0
@@ -2708,8 +2724,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deckPrefabs:
-  - {fileID: 1051495807850602242, guid: ea042b448f401466a814fd7eba2f3ced, type: 3}
+  defaultDeckPrefabs: []
   deckSize: 20
   initialHandSize: 3
   maxHandSize: 8
@@ -2842,10 +2857,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deckPrefabs:
-  - {fileID: 1051495807850602242, guid: e3d4e3dd6dfaa42e9a0b7e74128ad5af, type: 3}
-  - {fileID: 1051495807850602242, guid: f74a9a2c81fc0414e9a882f06ff16181, type: 3}
-  - {fileID: 1051495807850602242, guid: 141f516745d024360a336f08b31b65f0, type: 3}
+  defaultDeckPrefabs: []
   deckSize: 20
   initialHandSize: 3
   maxHandSize: 8
