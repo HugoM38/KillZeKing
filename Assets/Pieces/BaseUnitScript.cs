@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Classe de base pour toutes les unités : gère stats, portée, déplacements, attaques et effets spéciaux.
@@ -37,6 +38,15 @@ public class BaseUnitScript : MonoBehaviour
 
     [Header("Identification de la famille")]
     public UnitFamily Family;
+
+    private static bool sceneTransitionTriggered = false;
+    private bool isDead = false;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
+    private static void ResetTransitionFlag()
+    {
+        sceneTransitionTriggered = false;
+    }
 
 
     void Awake() { }
@@ -128,6 +138,12 @@ public class BaseUnitScript : MonoBehaviour
         int d = v - currentHealth;
         currentHealth = Mathf.Clamp(v, 0, maxHealth);
         if (d != 0) ShowStatChange($"{(d>0?"+":"")}{d} PV", d<0?Color.red:Color.green);
+
+        // Gère la mort quand la vie tombe à 0
+        if (currentHealth <= 0 && !isDead)
+        {
+            Die();
+        }
     }
 
     public void SetAttackDamage(int v)
@@ -298,6 +314,25 @@ public class BaseUnitScript : MonoBehaviour
     public void TakeDamage(int amount)
     {
         SetCurrentHealth(currentHealth - amount);
+    }
+
+    private void Die()
+    {
+        if (isDead) return;
+        isDead = true;
+
+        // Si un héros meurt pendant la partie, retour à la sélection de personnage (une seule fois)
+        if (!sceneTransitionTriggered && Family == UnitFamily.Hero)
+        {
+            var active = SceneManager.GetActiveScene();
+            if (active.IsValid() && active.name == "Game")
+            {
+                sceneTransitionTriggered = true;
+                SceneManager.LoadScene("CharacterSelection");
+            }
+        }
+
+        Destroy(gameObject);
     }
 
     private void ShowStatChange(string text, Color color)
