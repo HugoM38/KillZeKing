@@ -2723,6 +2723,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ownerTeam: 0
   defaultDeckPrefabs: []
   deckSize: 20
   initialHandSize: 3
@@ -2856,6 +2857,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: becbe419bf1c14c909e218892091b37c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  ownerTeam: 1
   defaultDeckPrefabs: []
   deckSize: 20
   initialHandSize: 3

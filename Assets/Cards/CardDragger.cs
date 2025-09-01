@@ -5,6 +5,9 @@ public class CardDragger : MonoBehaviour
 {
     [HideInInspector] public FullDeckGenerator deckGen;
 
+    // ⚑ À quel camp appartient cette carte ?
+    public BaseUnitScript.Team ownerTeam = BaseUnitScript.Team.Player;
+
     private Vector3 offset;
     private bool isDragging = false;
     private SpriteRenderer sr;
@@ -58,12 +61,12 @@ public class CardDragger : MonoBehaviour
 
         if (dragHoverTile != null)
         {
-            SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
+            SelectionManager.Instance?.OnTileUnhovered(dragHoverTile);
             dragHoverTile = null;
         }
 
-        // Seul le joueur peut utiliser la carte
-        if (TurnManager.Instance.currentPlayer != BaseUnitScript.Team.Player)
+        // ✅ Alternance stricte : seule l'équipe propriétaire peut jouer à SON tour
+        if (TurnManager.Instance.currentPlayer != ownerTeam)
         {
             SnapBackToClosestSlot();
             return;
@@ -79,63 +82,76 @@ public class CardDragger : MonoBehaviour
 
         Tile dropTile = GetTileUnderMouse();
 
-        // 1) Évolution
+        // 1) ÉVOLUTION (même famille + même équipe que la carte)
         if (dropTile != null && dropTile.currentPiece != null && card.evolutionPrefab != null)
         {
             BaseUnitScript existing = dropTile.currentPiece;
-            BaseUnitScript evoUnit = card.evolutionPrefab.GetComponent<BaseUnitScript>();
+            BaseUnitScript evoUnit  = card.evolutionPrefab.GetComponent<BaseUnitScript>();
+
             if (evoUnit != null
                 && existing.Family == evoUnit.Family
-                && existing.team == TurnManager.Instance.currentPlayer)
+                && existing.team   == ownerTeam)
             {
                 Destroy(existing.gameObject);
                 GameObject evoGO = Instantiate(card.evolutionPrefab,
                     dropTile.transform.position, Quaternion.identity, dropTile.transform);
+
                 if (evoGO.TryGetComponent<BaseUnitScript>(out var newUnit))
+                {
+                    newUnit.team = ownerTeam;          // ← sécurise l’équipe
                     dropTile.SetPiece(newUnit);
+                }
 
                 TurnManager.Instance.SpendPA();
                 CleanupAndDestroy();
                 return;
             }
+
             SnapBackToClosestSlot();
             return;
         }
 
-        // 2) Invocation
+        // 2) INVOCATION (sur la moitié du plateau du propriétaire)
         if (dropTile != null && !dropTile.IsOccupied() && card.summonPrefab != null)
         {
-            bool isPlayer = TurnManager.Instance.currentPlayer == BaseUnitScript.Team.Player;
             int y = dropTile.coordinates.y;
             int h = BoardGenerator.Instance.height;
-            int maxPlayerRow = h/2 - 1;
-            int minEnemyRow = h - h/2;
-            bool valid = isPlayer ? (y <= maxPlayerRow) : (y >= minEnemyRow);
-            if (valid)
+            int maxPlayerRow = h/2 - 1;            // moitié basse (Player)
+            int minEnemyRow  = h - h/2;            // moitié haute (Enemy)
+
+            bool validHalf = (ownerTeam == BaseUnitScript.Team.Player)
+                ? (y <= maxPlayerRow)
+                : (y >= minEnemyRow);
+
+            if (validHalf)
             {
                 GameObject summGO = Instantiate(card.summonPrefab,
                     dropTile.transform.position, Quaternion.identity, dropTile.transform);
+
                 if (summGO.TryGetComponent<BaseUnitScript>(out var newUnit))
+                {
+                    newUnit.team = ownerTeam;       // ← sécurise l’équipe
                     dropTile.SetPiece(newUnit);
+                }
 
                 TurnManager.Instance.SpendPA();
                 CleanupAndDestroy();
                 return;
             }
+
             SnapBackToClosestSlot();
             return;
         }
 
-        // 3) Sort ciblé avec validation de cible
+        // 3) SORT CIBLÉ (offensifs => ennemis ; soutien => alliés) basés sur ownerTeam
         if (dropTile != null && dropTile.currentPiece != null)
         {
             BaseUnitScript unit = dropTile.currentPiece;
-            BaseUnitScript.Team currentPlayer = TurnManager.Instance.currentPlayer;
-            bool isAlly = unit.team == currentPlayer;
+            bool isAlly  = (unit.team == ownerTeam);
             bool isEnemy = !isAlly;
             bool validTarget = false;
 
-            // Déterminer type de sort : offensif ou soutien
+            // Type de sort (par nom)
             switch (card.cardName)
             {
                 // Offensifs → ennemis uniquement
@@ -169,20 +185,25 @@ public class CardDragger : MonoBehaviour
                 case "Boule de Feu":
                     unit.TakeDamage(card.cardValue);
                     break;
+
                 case "Entrave":
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.Stun, 1);
                     break;
+
                 case "Bouclier anti-attaque":
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.NoAttack, 1);
                     break;
+
                 case "Sceau de silence":
                     unit.ApplyStatus(BaseUnitScript.StatusEffect.Silence, 1);
                     unit.SetCurrentEnergy(0);
-                    SelectionManager.Instance.OnTileSelected(dropTile);
+                    SelectionManager.Instance?.OnTileSelected(dropTile);
                     break;
+
                 case "Soin":
                     unit.SetCurrentHealth(unit.GetCurrentHealth() + card.cardValue);
                     break;
+
                 case "Defense Shield":
                     unit.SetMaxHealth(unit.GetMaxHealth() + card.cardValue);
                     break;
@@ -215,33 +236,48 @@ public class CardDragger : MonoBehaviour
 
     private void DetectHoverTile()
     {
-        Vector3 wp = GetMouseWorldPos();
-        var hits = Physics2D.OverlapPointAll(wp);
+        Vector3 wp3 = GetMouseWorldPos();
+        Vector2 wp  = new Vector2(wp3.x, wp3.y);
+
         myCollider.enabled = false;
+        var hits = Physics2D.OverlapPointAll(wp);
+        myCollider.enabled = true;
+
         Tile newTile = null;
         foreach (var c in hits)
             if (c.TryGetComponent<Tile>(out newTile)) break;
-        myCollider.enabled = true;
 
         if (newTile != dragHoverTile)
         {
             if (dragHoverTile != null)
-                SelectionManager.Instance.OnTileUnhovered(dragHoverTile);
+                SelectionManager.Instance?.OnTileUnhovered(dragHoverTile);
+
             dragHoverTile = newTile;
+
             if (dragHoverTile != null)
-                SelectionManager.Instance.OnTileHovered(dragHoverTile);
-            ApplyTransparency(hoverAlpha);
+            {
+                SelectionManager.Instance?.OnTileHovered(dragHoverTile);
+                ApplyTransparency(hoverAlpha);
+            }
+            else
+            {
+                ResetTransparency();
+            }
         }
     }
 
     private Tile GetTileUnderMouse()
     {
-        Vector3 wp = GetMouseWorldPos();
+        Vector3 wp3 = GetMouseWorldPos();
+        Vector2 wp  = new Vector2(wp3.x, wp3.y);
+
         myCollider.enabled = false;
         var hits = Physics2D.OverlapPointAll(wp);
         myCollider.enabled = true;
+
         foreach (var c in hits)
             if (c.TryGetComponent<Tile>(out var t)) return t;
+
         return null;
     }
 
@@ -270,15 +306,18 @@ public class CardDragger : MonoBehaviour
     private void SnapBackToClosestSlot()
     {
         if (deckGen == null) return;
+
         int originalIndex = deckGen.cardGOs.IndexOf(gameObject);
         float bestDist = float.MaxValue;
         int bestIdx = originalIndex;
         Vector3 localPos = transform.localPosition;
+
         for (int i = 0; i < deckGen.slotPositions.Count; i++)
         {
             float d = Vector2.Distance(localPos, deckGen.slotPositions[i]);
             if (d < bestDist) { bestDist = d; bestIdx = i; }
         }
+
         if (bestIdx != originalIndex)
             deckGen.SwapCards(originalIndex, bestIdx);
         else

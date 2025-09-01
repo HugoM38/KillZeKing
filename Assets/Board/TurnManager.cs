@@ -28,6 +28,7 @@ public class TurnManager : MonoBehaviour
     void Start()
     {
         UpdateUI();
+        ApplyHandVisibility(); // ← montre la bonne main au lancement
     }
 
     public PlayerStats CurrentStats =>
@@ -35,24 +36,22 @@ public class TurnManager : MonoBehaviour
 
     public void NextTurn()
     {
-        // 🕒 0) En fin de tour, décrémente les effets sur toutes les unités
+        // Effets fin de tour
         var allUnits = Object.FindObjectsByType<BaseUnitScript>(FindObjectsSortMode.None);
-        foreach (var u in allUnits)
-            u.OnTurnEnd();
+        foreach (var u in allUnits) u.OnTurnEnd();
 
-        // 1) Changement de joueur
+        // Switch joueur
         currentPlayer = (currentPlayer == BaseUnitScript.Team.Player)
             ? BaseUnitScript.Team.Enemy
             : BaseUnitScript.Team.Player;
 
         if (currentPlayer == BaseUnitScript.Team.Player) turnCountPlayer++;
-        else                                           turnCountEnemy++;
+        else                                             turnCountEnemy++;
 
         PlayerStats stats = CurrentStats;
-        int turnCount = (currentPlayer == BaseUnitScript.Team.Player)
-            ? turnCountPlayer : turnCountEnemy;
+        int turnCount = (currentPlayer == BaseUnitScript.Team.Player) ? turnCountPlayer : turnCountEnemy;
 
-        // 2) Gain de PA/PM si >1
+        // Gain PA/PM au-delà du T1
         if (turnCount > 1)
         {
             stats.maxPA = Mathf.Min(stats.maxPA + 1, 5);
@@ -62,13 +61,14 @@ public class TurnManager : MonoBehaviour
         stats.pa = stats.maxPA;
         stats.pm = stats.maxPM;
 
-        // 3) Pioche
+        // Pioche au début du tour
         if (currentPlayer == BaseUnitScript.Team.Player)
-            playerHand.DrawOneCard();
+            playerHand?.DrawOneCard();
         else
-            enemyHand.DrawOneCard();
+            enemyHand?.DrawOneCard();
 
         UpdateUI();
+        ApplyHandVisibility(); // ← à CHAQUE changement de tour
     }
 
     private void RechargerEnergieDesUnites()
@@ -86,9 +86,13 @@ public class TurnManager : MonoBehaviour
     {
         var s = CurrentStats;
         PieceInfoUI.instance?.UpdateTurnDisplay(currentPlayer, s.pa, s.maxPA, s.pm, s.maxPM);
-        UIButtons.Instance?.SetButtonsVisibility(
-            showMove: false, showAttack: false, showSpecialAttack: false,
-            showCancel: false, showEndTurn: true
-        );
+        UIButtons.Instance?.SetButtonsVisibility(false, false, false, false, true);
+    }
+
+    // 🔵 NOUVEAU : rend visible seulement la main du joueur actif
+    private void ApplyHandVisibility()
+    {
+        if (playerHand != null) playerHand.SetHandVisible(currentPlayer == BaseUnitScript.Team.Player);
+        if (enemyHand  != null) enemyHand.SetHandVisible(currentPlayer == BaseUnitScript.Team.Enemy);
     }
 }
